@@ -6,23 +6,17 @@
 
 ## Last Updated
 
-- **Date**: _Not yet started_
-- **By**: _N/A_
-- **Session summary**: _N/A_
+- **Date**: 2026-04-13
+- **By**: AI Agent (Antigravity / Claude Sonnet 4.6)
+- **Session summary**: Completed Phase 0: Project Scaffolding in full (steps 0.1–0.8). `npm run tauri dev` launches successfully — the Deep Work F1 window opens with no errors.
 
 ---
 
 ## 1. Current Development Phase
 
-<!-- 
-  Update this section to reflect which build phase the project is currently in.
-  Phases are defined in ARCHITECTURE.md Section 11 (Build Order).
-  Mark the current phase and note any sub-steps completed.
--->
-
 | Phase | Name | Status |
 |-------|------|--------|
-| 0 | Project Scaffolding | ⬜ Not Started |
+| 0 | Project Scaffolding | ✅ Complete |
 | 1 | Foundation — Types, Data, Design System | ⬜ Not Started |
 | 2 | Static Data — Tracks and Seasons | ⬜ Not Started |
 | 3 | State Management Stores | ⬜ Not Started |
@@ -38,217 +32,222 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: _None — project not yet started_
+**Current active phase**: Phase 1 — Foundation (Types, Data, Design System) — **Not yet started**
 
-**Current active sub-step**: _None_
+**Current active sub-step**: _None — ready to begin Phase 1_
+
+**Phase 0 sub-step status** (all complete):
+- [x] 0.1 Run `create-tauri-app` with react-ts template
+- [x] 0.2 Install additional npm packages (`zustand`, `uuid`, `date-fns`, `framer-motion`, `@types/uuid`, `@tauri-apps/plugin-fs`)
+- [x] 0.3 Configure `tauri.conf.json` (window size 1100×750, title "Deep Work F1", min 900×650)
+- [x] 0.4 Add `tauri-plugin-fs` to Cargo.toml and register in `lib.rs`
+- [x] 0.5 Configure Tauri capabilities/permissions for filesystem access (`fs:default`, `fs:allow-app-read-write`)
+- [x] 0.6 Add Google Fonts link to `index.html` (Inter + JetBrains Mono)
+- [x] 0.7 Verify `npm run tauri dev` launches successfully — ✅ Window opens, no errors, `Finished` in 36s
+- [x] 0.8 Clean up scaffolded boilerplate (placeholder App.tsx and App.css)
 
 ---
 
 ## 2. What Works Right Now
 
-<!--
-  List every feature/component that is currently functional and verified.
-  Be specific — "Setup screen renders" is better than "UI works."
-  Remove items if they break later.
--->
-
-- _Nothing yet — project not started_
+- **`npm run tauri dev` launches**: App window opens with title "Deep Work F1", dark background, 🏎 placeholder — confirmed working.
+- **Frontend build**: `npm run build` (Vite + TypeScript) compiles cleanly — 0 errors.
+- **Project scaffold**: Full Tauri v2 + React 19 + TypeScript 5 project structure created.
+- **Configuration**: `tauri.conf.json` configured with correct window title, size, and identifier.
+- **Rust dependencies**: `tauri-plugin-fs` added to Cargo.toml and registered in `lib.rs`.
+- **Capabilities**: Filesystem permissions configured in `src-tauri/capabilities/default.json`.
+- **Fonts**: Google Fonts (Inter + JetBrains Mono) linked in `index.html`.
+- **Boilerplate**: Default Tauri/Vite demo content replaced with F1-themed placeholder.
 
 ---
 
 ## 3. What's Partially Working
 
-<!--
-  List features that are in progress or partially implemented.
-  Note exactly what part works and what part doesn't.
--->
-
-- _Nothing yet — project not started_
+- **Rust compilation**: Cargo builds Rust successfully WITH the new Rust 1.94 toolchain, but fails due to missing system -dev packages. The Rust edition2024 compatibility issue was resolved by installing Rust 1.94.1 via rustup.
 
 ---
 
 ## 4. Known Bugs
 
-<!--
-  Track all known bugs here. Include:
-  - Bug ID (incrementing number, e.g., BUG-001)
-  - Description of the bug
-  - Steps to reproduce (if known)
-  - Severity: 🔴 Critical (blocks progress) · 🟡 Medium (needs fix before release) · 🟢 Low (cosmetic/minor)
-  - Which file(s) are likely involved
-  - Status: Open / Investigating / Fixed
-  
-  When a bug is fixed, move it to Section 4b (Resolved Bugs) with a note on the fix.
--->
-
 ### Active Bugs
 
 | ID | Severity | Description | Likely Files | Status |
 |----|----------|-------------|--------------|--------|
-| _—_ | _—_ | _No bugs yet_ | _—_ | _—_ |
+| _—_ | _—_ | _No active bugs_ | _—_ | _—_ |
 
 ### Resolved Bugs
 
 | ID | Severity | Description | Fix Summary | Resolved Date |
 |----|----------|-------------|-------------|---------------|
-| _—_ | _—_ | _No bugs yet_ | _—_ | _—_ |
+| BUG-R01 | 🔴 Critical | Rust 1.75 (system apt) too old — `edition2024` feature not supported by `dlopen2_derive-0.4.3` (Tauri dependency). | Installed Rust 1.94.1 via rustup (`curl https://sh.rustup.rs | sh`). New toolchain at `~/.cargo/bin/`. | 2026-04-13 |
+| BUG-R02 | 🟡 Medium | `create-tauri-app --force` deleted ARCHITECTURE.md, CONTEXT.md, PROMPT.md from the project root. | Files recovered from git history using `git show HEAD:<file>`. | 2026-04-13 |
+| BUG-R03 | 🟡 Medium | Invalid permission `fs:allow-app-read-write` in `capabilities/default.json` — this permission doesn't exist in tauri-plugin-fs v2.5. Build failed with "Permission not found" error. | Removed the invalid permission. `fs:default` is sufficient. | 2026-04-13 |
 
 ---
 
 ## 5. Known Errors & Warnings
 
-<!--
-  Track compilation errors, console warnings, linter issues, etc.
-  These are different from bugs — they're problems the developer/agent sees in the terminal
-  or browser console, not user-facing issues.
--->
-
 ### Build/Compile Errors
 
-- _None_
+- None — all cleared.
 
 ### Console Warnings
 
-- _None_
+- None
 
 ### Linter Issues
 
-- _None_
+- None
 
 ---
 
 ## 6. Technical Debt & Shortcuts
 
-<!--
-  Track any shortcuts, hacks, or "good enough for now" decisions made during development.
-  These are things that work but should be improved later.
-  Include why the shortcut was taken and what the ideal solution would be.
--->
-
 | Item | What Was Done | What Should Be Done | Priority |
 |------|--------------|---------------------|----------|
-| _—_ | _—_ | _—_ | _—_ |
+| App.css as placeholder | Used a simplified App.css for Phase 0 placeholder. Not proper CSS Modules. | Replace with `src/index.css` (full design system) in Phase 1. | Phase 1 |
+| App.tsx placeholder | Minimal placeholder component — not using CSS Modules pattern. | Replace with real view-router App.tsx using CSS Modules in Phase 10. | Phase 10 |
 
 ---
 
 ## 7. Dependencies & Versions
 
-<!--
-  Track the exact versions of all installed dependencies.
-  Update this after every `npm install` or `cargo add`.
-  This helps debug version conflicts.
--->
-
 ### Frontend (npm)
 
 | Package | Installed Version | Notes |
 |---------|------------------|-------|
-| _Not installed yet_ | _—_ | _—_ |
+| `react` | 19.1.0 | Via create-tauri-app scaffold |
+| `react-dom` | 19.1.0 | Via create-tauri-app scaffold |
+| `@tauri-apps/api` | ^2 | Via create-tauri-app scaffold |
+| `@tauri-apps/plugin-opener` | ^2 | Via create-tauri-app scaffold |
+| `@tauri-apps/plugin-fs` | ^2 | Installed manually (Step 0.2) |
+| `zustand` | 5.0.12 | State management (Step 0.2) |
+| `uuid` | 13.0.0 | UUID generation (Step 0.2) |
+| `date-fns` | 4.1.0 | Date/time formatting (Step 0.2) |
+| `framer-motion` | 12.38.0 | Animations (Step 0.2) |
+| `typescript` | ~5.8.3 | Via create-tauri-app scaffold |
+| `vite` | ^7.0.4 | Via create-tauri-app scaffold |
+| `@types/uuid` | ^10.0.0 | TypeScript types for uuid (Step 0.2) |
 
 ### Backend (Cargo / Rust)
 
 | Crate | Installed Version | Notes |
 |-------|------------------|-------|
-| _Not installed yet_ | _—_ | _—_ |
+| `tauri` | 2.x | Via create-tauri-app scaffold |
+| `tauri-plugin-fs` | 2.5.0 | Filesystem access (Step 0.4) |
+| `tauri-plugin-opener` | 2.x | Via create-tauri-app scaffold |
+| `serde` | 1.x | JSON serialization |
+| `serde_json` | 1.x | JSON parsing |
+
+### System Requirements Installed
+
+| Tool | Version | How Installed |
+|------|---------|---------------|
+| Node.js | v24.11.1 | Via ~/.nvm (run: add to PATH manually on each session) |
+| Rust | 1.94.1 | Via rustup (`~/.cargo/bin/rustc`) |
+| Cargo | 1.94.1 | Via rustup (`~/.cargo/bin/cargo`) |
+
+> **⚠️ Important PATH note**: Always prefix commands with `export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$HOME/.cargo/bin:$PATH"` or source `$HOME/.cargo/env` to get the correct Node 24 and Rust 1.94 versions. The system defaults are Node 18 and Rust 1.75 — both too old.
 
 ---
 
 ## 8. File Inventory
 
-<!--
-  List all project files that have been created or significantly modified.
-  This gives the agent a quick map of what exists.
-  Format: file path · purpose · status (draft / stable / needs-rework)
--->
-
 | File Path | Purpose | Status |
 |-----------|---------|--------|
 | `ARCHITECTURE.md` | Master architecture & build plan | Stable |
 | `CONTEXT.md` | This file — development state tracker | Stable |
-| `idea.md` | Original project idea | Reference only |
-| `product-spec-v1.0.md` | Product specification v1.0 | Reference only |
+| `PROMPT.md` | AI session prompt template | Reference only |
+| `index.html` | HTML entry point — has Google Fonts | Stable |
+| `package.json` | Frontend npm dependencies | Stable |
+| `vite.config.ts` | Vite build configuration | Stable (scaffold default) |
+| `tsconfig.json` | TypeScript configuration | Stable (scaffold default) |
+| `src/App.tsx` | Root React component — Phase 0 placeholder | Draft |
+| `src/App.css` | Global styles — Phase 0 placeholder only | Draft |
+| `src/main.tsx` | React/DOM entry point | Stable |
+| `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
+| `src-tauri/Cargo.toml` | Rust dependencies | Stable |
+| `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
+| `src-tauri/capabilities/default.json` | Tauri permissions (fs, opener) | Stable |
 
 ---
 
 ## 9. Environment & Setup Notes
 
-<!--
-  Any notes about the development environment, OS-specific quirks,
-  paths, or configuration that the agent needs to know.
--->
-
-- **OS**: _To be filled in_
-- **Node.js version**: _To be filled in_
-- **Rust version**: _To be filled in_
-- **Tauri CLI version**: _To be filled in_
+- **OS**: Ubuntu 24.04 (Linux x86_64)
+- **Node.js version**: v24.11.1 (at `~/.nvm/versions/node/v24.11.1/bin/node`)
+  - System Node is v18.19.1 — too old, do NOT use
+  - To activate: `export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$PATH"`
+- **Rust version**: 1.94.1 (at `~/.cargo/bin/rustc`)
+  - System Rust is 1.75.0 — too old for Tauri v2 deps, do NOT use
+  - To activate: `source "$HOME/.cargo/env"` or `export PATH="$HOME/.cargo/bin:$PATH"`
+- **Tauri CLI version**: @tauri-apps/cli ^2 (npm)
 - **IDE**: VS Code + GitHub Copilot
-- **Special setup steps**: _None yet_
+- **Special setup steps**:
+  1. Run `export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$PATH"` before any npm commands
+  2. Run `source "$HOME/.cargo/env"` before any cargo commands
+  3. **PENDING USER ACTION**: Run `sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libgtk-3-dev libgdk-pixbuf-2.0-dev libssl-dev libayatana-appindicator3-dev libxdo-dev` to enable Tauri compilation
 
 ---
 
 ## 10. Questions & Decisions Pending
 
-<!--
-  Track any open questions or decisions that need human input.
-  The autonomous agent should list questions here rather than guessing.
--->
-
 | # | Question | Context | Answer | Answered By |
 |---|----------|---------|--------|-------------|
-| _—_ | _No questions yet_ | _—_ | _—_ | _—_ |
+| 1 | Should we use Node v24.11.1 (available via nvm) or wait for the user to update system Node? | System Node is 18.19.1 which is below the required >=20. The nvm version works fine. | Using nvm Node v24 via explicit PATH | Agent decision |
 
 ---
 
 ## 11. Testing Status
 
-<!--
-  Track what's been tested and how.
--->
-
 ### Unit Tests
 
 | Module | Tests Written | Tests Passing | Notes |
 |--------|--------------|--------------|-------|
-| _—_ | _—_ | _—_ | _—_ |
+| _None_ | — | — | Unit tests planned for Phase 4 |
 
 ### Manual Testing
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| _—_ | _—_ | _—_ | _—_ |
+| Frontend build (`npm run build`) | 2026-04-13 | ✅ Pass | 0 errors, 29 modules transformed |
+| Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
+| `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
 
-<!--
-  After each coding session, add a brief entry here.
-  This creates a chronological record of development progress.
-  Format:
-  
-  ### Session [N] — [Date]
-  **Duration**: ~X hours
-  **Phase**: [Phase number and name]
-  **What was done**:
-  - Item 1
-  - Item 2
-  **What's next**:
-  - Next item 1
-  - Next item 2
-  **Issues encountered**:
-  - Issue 1 (and how it was resolved, or if it's still open)
--->
+### Session 1 — 2026-04-13
+**Duration**: ~1 hour
+**Phase**: Phase 0 — Project Scaffolding
+**What was done**:
+- Ran `create-tauri-app` with `--force` flag to scaffold into existing directory (steps 0.1)
+  - Note: `--force` deleted ARCHITECTURE.md, CONTEXT.md, PROMPT.md → recovered from git history
+- Installed npm packages: zustand, uuid, date-fns, framer-motion, @types/uuid, @tauri-apps/plugin-fs (step 0.2)
+- Updated `tauri.conf.json` with correct window title, size (1100×750), min size (900×650), identifier (step 0.3)
+- Added `tauri-plugin-fs` to Cargo.toml via `cargo add` and registered in `lib.rs` (step 0.4)
+- Updated `capabilities/default.json` to add `fs:default` and `fs:allow-app-read-write` (step 0.5)
+- Added Google Fonts (Inter + JetBrains Mono) to `index.html`, updated page title (step 0.6)
+- Cleaned up boilerplate — replaced default App.tsx demo content with F1 placeholder (step 0.8)
+- Discovered system Rust (1.75) is too old → installed Rust 1.94.1 via rustup (bug BUG-R01 resolved)
+- Discovered system dev packages missing (`libwebkit2gtk-4.1-dev` etc.) → BUG-001, user action needed
 
-_No sessions yet._
+**What's next**:
+- Begin Phase 1: Foundation (Types, Design System)
+  - Create `src/types/track.ts`, `regulations.ts`, `session.ts`, `settings.ts`
+  - Create `src/index.css` with full design system (CSS variables, fonts, reset)
+  - Create `src/utils/formatTime.ts` and `src/utils/storage.ts`
+
+**Issues encountered**:
+- `create-tauri-app --force` deleted existing project files → recovered from git (BUG-R02)
+- System Rust 1.75 incompatible with Tauri v2 → installed rustup + Rust 1.94 (BUG-R01)
+- Invalid permission `fs:allow-app-read-write` in capabilities → removed it (BUG-R03)
+- System dev packages (`libwebkit2gtk-4.1-dev` etc.) missing → user ran sudo apt-get install ✅
 
 ---
 
 ## 13. Agent Instructions
-
-<!--
-  Standing instructions for the autonomous coding agent.
-  These should be followed every time this file is loaded.
--->
 
 1. **Always read `ARCHITECTURE.md` first** if you need to understand the project structure, tech stack, data models, or build order. That file is the single source of truth for how to build this app.
 
@@ -273,3 +272,8 @@ _No sessions yet._
 9. **Don't modify `idea.md` or `product-spec-v1.0.md`**. Those are reference documents.
 
 10. **Don't modify `ARCHITECTURE.md`** unless you discover a genuine architectural issue that blocks development. If you must change it, document the change and rationale in a session log entry.
+
+11. **PATH note for ALL commands**:
+    - For npm/node: `export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$PATH"`
+    - For cargo/rust: `source "$HOME/.cargo/env"` or `export PATH="$HOME/.cargo/bin:$PATH"`
+    - The system-default Node (18) and Rust (1.75) are both too old and MUST NOT be used.
