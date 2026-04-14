@@ -7,8 +7,8 @@
 ## Last Updated
 
 - **Date**: 2026-04-14
-- **By**: AI Agent (Antigravity / Claude Sonnet 4.6 Thinking)
-- **Session summary**: Completed Phase 3: State Management Stores — steps 3.1–3.4. Created `settingsStore.ts` (load/save persistence), `sessionStore.ts` (full session lifecycle + tick + regulations + penalties), `historyStore.ts` (past sessions, 100-cap, persisted). Wired persistence in `App.tsx` via `useEffect` on mount. `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
+- **By**: AI Agent (Antigravity / Claude Opus 4.6 Thinking)
+- **Session summary**: Started Phase 4: Engine — Core Logic — steps 4.1–4.3. Created `sessionStateMachine.ts` (pure state-transition helpers), `progressCalculator.ts` (lap/progress math), `regulationsEngine.ts` (activation checks, button states, cooldowns, interruption penalties). All pure-logic modules with no side effects. `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
 
 ---
 
@@ -20,7 +20,7 @@
 | 1 | Foundation — Types, Data, Design System | ✅ Complete |
 | 2 | Static Data — Tracks and Seasons | ✅ Complete |
 | 3 | State Management Stores | ✅ Complete |
-| 4 | Engine — Core Logic | ⬜ Not Started |
+| 4 | Engine — Core Logic | 🔨 In Progress |
 | 5 | Track Renderer Component | ⬜ Not Started |
 | 6 | Setup Screen | ⬜ Not Started |
 | 7 | Race Screen | ⬜ Not Started |
@@ -32,9 +32,22 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 4 — Engine: Core Logic — **Not yet started**
+**Current active phase**: Phase 4 — Engine: Core Logic — **In progress (4.1–4.3 done)**
 
-**Current active sub-step**: _None — ready to begin Phase 4_
+**Current active sub-step**: 4.4 — Create `src/engine/penaltyDetector.ts`
+
+**Phase 4 sub-step status** (3 of 10 complete):
+- [x] 4.1 Create `src/engine/sessionStateMachine.ts` — Pure state-transition map + helpers: `canTransition()`, `getValidTransitions()`, `isTerminalState()`, `isActiveState()`, `isTickingState()`
+- [x] 4.2 Create `src/engine/progressCalculator.ts` — `calculateEffectiveProgress()`, `calculateLapInfo()` (with `BASE_LAP_SECONDS=300`), `calculateOverallProgress()`, `calculateRemainingSec()`
+- [x] 4.3 Create `src/engine/regulationsEngine.ts` — `canActivateRegulation()`, `getRegulationState()`, `getCooldownRemainingSec()`, `getCooldownProgress()`, `getActiveRegulationRemainingSec()`, `getActiveRegulationProgress()`, `getRemainingUses()`, `calculateInterruptionPenalty()`, `getRegulationConfig()`
+- [ ] 4.4 Create `src/engine/penaltyDetector.ts`
+- [ ] 4.5 Create `src/engine/timer.ts`
+- [ ] 4.6 Create `src/hooks/useTimer.ts`
+- [ ] 4.7 Create `src/hooks/useRegulations.ts`
+- [ ] 4.8 Create `src/hooks/usePenaltyDetection.ts`
+- [ ] 4.9 Create `src/hooks/useTrackProgress.ts`
+- [ ] 4.10 Create `src/utils/interpolatePath.ts`
+- [ ] Verify: `tsc --noEmit` 0 errors; `npm run build` succeeds
 
 **Phase 3 sub-step status** (all complete):
 - [x] 3.1 Create `src/stores/settingsStore.ts` — UserSettings store with `loadSettings()` / `updateSettings()` / `resetSettings()`, persisted to `settings.json`
@@ -91,6 +104,7 @@
 - **Design system CSS**: `src/index.css` created with full CSS variables, reset, and base styles.
 - **Utility modules**: `formatTime.ts` (time formatting) and `storage.ts` (Tauri fs wrapper) created.
 - **State stores**: `settingsStore.ts`, `sessionStore.ts`, `historyStore.ts` — all created and wired. Settings and history auto-load from disk on app start.
+- **Engine modules (partial)**: `sessionStateMachine.ts` (state transitions), `progressCalculator.ts` (lap/progress math), `regulationsEngine.ts` (activation logic, cooldowns, button states).
 
 ---
 
@@ -215,6 +229,9 @@
 | `src/stores/settingsStore.ts` | UserSettings Zustand store — load/save to settings.json | ✅ Created Phase 3 |
 | `src/stores/sessionStore.ts` | Active session Zustand store — full lifecycle, tick, regulations, penalties | ✅ Created Phase 3 |
 | `src/stores/historyStore.ts` | Past sessions Zustand store — load/save to history.json, 100-cap | ✅ Created Phase 3 |
+| `src/engine/sessionStateMachine.ts` | Pure state-transition helpers (canTransition, isTerminal, etc.) | ✅ Created Phase 4 |
+| `src/engine/progressCalculator.ts` | Lap calculation, overall progress, remaining time math | ✅ Created Phase 4 |
+| `src/engine/regulationsEngine.ts` | Activation checks, button states, cooldowns, interruption penalties | ✅ Created Phase 4 |
 | `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
@@ -260,14 +277,35 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 3 stores included) |
-| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 + Phase 3 files |
+| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 4 engine modules included) |
+| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 + Phase 3 + Phase 4 (4.1–4.3) files |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
 | `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
+
+### Session 5 — 2026-04-14
+**Duration**: ~10 minutes
+**Phase**: Phase 4 — Engine: Core Logic (steps 4.1–4.3)
+**What was done**:
+- Step 4.1: Created `src/engine/sessionStateMachine.ts` — Pure state-transition module. Defines a `VALID_TRANSITIONS` lookup table matching ARCHITECTURE.md §9.4.1 exactly (setup→running, running→paused/completed/abandoned, paused→running/abandoned). Exports: `canTransition(from, to)`, `getValidTransitions(from)`, `isTerminalState(state)`, `isActiveState(state)`, `isTickingState(state)`. No side effects. Verified with `tsc --noEmit` 0 errors.
+- Step 4.2: Created `src/engine/progressCalculator.ts` — Pure math module for session progress. Constants: `BASE_LAP_SECONDS = 300` (a 25-min session on a factor-1.0 track yields 5 laps). Exports: `calculateEffectiveProgress()` (converts elapsed time + multiplier – penalties → effective seconds), `calculateLapInfo()` (returns currentLap, totalLaps, lapProgress 0–1), `calculateOverallProgress()` (overall 0–1 fraction), `calculateRemainingSec()`. Verified with `tsc --noEmit` 0 errors.
+- Step 4.3: Created `src/engine/regulationsEngine.ts` — Pure regulations logic. Core: `canActivateRegulation(type, session, ruleset)` checks 5 conditions (season availability, active regulation, cooldown, usage limit, lockout matrix) and returns `{ allowed, reason? }`. Also exports: `getRegulationState()` (button visual state: available/active/cooldown/depleted/locked/unavailable), `getCooldownRemainingSec()`, `getCooldownProgress()` (for cooldown bar), `getActiveRegulationRemainingSec()`, `getActiveRegulationProgress()`, `getRemainingUses()`, `calculateInterruptionPenalty()`, `getRegulationConfig()`. Verified with `tsc --noEmit` 0 errors.
+- Full build verified: `npm run build` succeeds — 41 modules, 0 errors.
+
+**What's next**:
+- Continue Phase 4: steps 4.4–4.10
+  - Create `src/engine/penaltyDetector.ts`
+  - Create `src/engine/timer.ts`
+  - Create React hooks (`useTimer`, `useRegulations`, `usePenaltyDetection`, `useTrackProgress`)
+  - Create `src/utils/interpolatePath.ts`
+
+**Issues encountered**:
+- None. Steps 4.1–4.3 were clean.
+
+---
 
 ### Session 4 — 2026-04-14
 **Duration**: ~20 minutes
