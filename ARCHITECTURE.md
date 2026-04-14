@@ -208,11 +208,9 @@ deep-work-f1/
 │   │
 │   ├── data/                     # Static data (tracks, season rulesets)
 │   │   ├── tracks/               # Track definitions
-│   │   │   ├── index.ts          # Track registry (exports all tracks)
-│   │   │   ├── bahrain.ts        # Individual track data + SVG path
-│   │   │   ├── jeddah.ts
-│   │   │   ├── melbourne.ts
-│   │   │   └── ... (more tracks)
+│   │   │   ├── index.ts          # Track registry + helper functions
+│   │   │   ├── trackPaths.ts     # SVG path `d` strings (extracted from f1-circuits-svg repo)
+│   │   │   └── trackCatalog.ts   # Track metadata (names, countries, colors, lap factors)
 │   │   └── seasons/              # Season ruleset definitions
 │   │       ├── index.ts          # Season registry
 │   │       ├── season2026.ts     # 2026 rules (Boost + Overtake)
@@ -300,8 +298,12 @@ deep-work-f1/
 ├── public/                       # Static assets served by Vite
 │   └── fonts/                    # Local font files if needed
 │
+├── scripts/                      # One-off dev scripts
+│   └── extract-track-paths.ts    # Extracts SVG `d` attributes from f1-circuits-svg repo
+│
 ├── ARCHITECTURE.md               # This file
 ├── CONTEXT.md                    # Development state tracker
+├── PROMPT.md                     # Prompt template & vibe coding guide
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
@@ -481,17 +483,19 @@ export interface TrackPoint {
 }
 
 export interface Track {
-  id: string;                    // e.g., "bahrain"
+  id: string;                    // Circuit ID from f1-circuits-svg repo (e.g., "bahrain")
+  layoutId: string;              // Specific layout version (e.g., "bahrain-1")
   name: string;                  // e.g., "Bahrain International Circuit"
-  country: string;               // e.g., "Bahrain"
-  city: string;                  // e.g., "Sakhir"
-  svgPath: string;               // SVG <path> d attribute string
-  svgViewBox: string;            // e.g., "0 0 800 600"
+  countryId: string;             // Country slug (e.g., "bahrain", "united-kingdom")
+  countryName: string;           // Display name (e.g., "Bahrain", "United Kingdom")
+  svgPathD: string;              // SVG <path> `d` attribute string (extracted from f1-circuits-svg)
   lapTimeFactor: number;         // Multiplier: 1.0 = standard. <1 = shorter laps, >1 = longer laps
   accentColor: string;           // Hex color for track-specific theming
   flagEmoji: string;             // Country flag emoji for display
 }
 ```
+
+> **Note on SVG data**: All `svgPathD` values come from the [julesr0y/f1-circuits-svg](https://github.com/julesr0y/f1-circuits-svg) repository (CC-BY-4.0 license). SVGs have a standard `500 × 500` viewBox. The `d` attribute is extracted from the `minimal/white-outline` style variants. Attribution is required in the app's about/credits section.
 
 ### 7.2 `types/regulations.ts`
 
@@ -759,64 +763,164 @@ export async function writeData<T>(filename: string, data: T): Promise<void>;
 
 **Purpose**: Define all available F1 tracks as static data. Each track is a TypeScript object conforming to the `Track` interface.
 
-**Track Data Requirements**:
+#### 9.2.1 SVG Source: `julesr0y/f1-circuits-svg`
 
-For v1.0, include a minimum of **6 tracks** from the 2026 calendar:
+All track SVG path data comes from the open-source repository:
+- **Repository**: https://github.com/julesr0y/f1-circuits-svg
+- **License**: CC-BY-4.0 (attribution required — add credit in app's about/settings screen)
+- **Contains**: 78 circuits, 4 visual styles, layouts from 1950-2026
+- **Format**: Each SVG is `500 × 500` px, with the track outline as a `<path>` element
 
-1. **Bahrain** — Sakhir (medium length)
-2. **Saudi Arabia** — Jeddah (long, fast street circuit)
-3. **Australia** — Melbourne (medium)
-4. **Japan** — Suzuka (long, technical)
-5. **Monaco** — Monte Carlo (short, iconic)
-6. **Great Britain** — Silverstone (medium-long)
+We use the **`minimal/white-outline`** style. These SVGs have two `<path>` elements sharing the **same `d` attribute**: one thick white outline (stroke-width 20) and one thin black center line (stroke-width 5). We only need the `d` attribute — we render the path ourselves with our own styling.
 
-**SVG Path Creation**:
+#### 9.2.2 Path Extraction Process
 
-Each track needs a simplified SVG `<path>` `d` attribute that represents the track layout. These should be **simplified approximations** — smooth, recognizable outlines, not pixel-perfect recreations.
+A one-time extraction script pulls the `d` attribute from each SVG file into a TypeScript data file:
 
-Guidelines for creating SVG paths:
-- Use a single continuous closed path (starting with `M`, using `C` / `Q` for curves, ending with `Z`).
-- Fit within a normalized viewBox (e.g., `0 0 1000 700`).
-- Keep path complexity manageable (under 50 curve commands per track).
-- The car drives **clockwise** (standard for most F1 circuits from TV perspective).
-
-**Lap Time Factor**:
-- Monaco: `0.6` (shortest lap → lots of laps per session)
-- Bahrain: `1.0` (baseline)
-- Jeddah: `1.2` (longer lap → fewer laps)
-- Suzuka: `1.1`
-- Melbourne: `0.9`
-- Silverstone: `1.0`
-
-**Track file example** (`data/tracks/bahrain.ts`):
+**Script**: `scripts/extract-track-paths.ts`
 
 ```typescript
-import type { Track } from '../../types/track';
+/**
+ * Run with: npx ts-node scripts/extract-track-paths.ts
+ *
+ * Prerequisites:
+ *   git clone https://github.com/julesr0y/f1-circuits-svg.git /tmp/f1-circuits-svg
+ *
+ * This script:
+ * 1. Reads each SVG file from /tmp/f1-circuits-svg/circuits/minimal/white-outline/
+ * 2. Extracts the `d` attribute from the first <path> element
+ * 3. Outputs src/data/tracks/trackPaths.ts with a Record<layoutId, pathD>
+ */
 
-export const bahrain: Track = {
-  id: 'bahrain',
-  name: 'Bahrain International Circuit',
-  country: 'Bahrain',
-  city: 'Sakhir',
-  svgPath: 'M 500 100 C ... Z',  // Actual simplified path data
-  svgViewBox: '0 0 1000 700',
-  lapTimeFactor: 1.0,
-  accentColor: '#d4a844',
-  flagEmoji: '🇧🇭',
-};
+import { readFileSync, writeFileSync, readdirSync } from 'fs';
+
+const SVG_DIR = '/tmp/f1-circuits-svg/circuits/minimal/white-outline';
+const OUTPUT = 'src/data/tracks/trackPaths.ts';
+
+const files = readdirSync(SVG_DIR).filter(f => f.endsWith('.svg'));
+const paths: Record<string, string> = {};
+
+for (const file of files) {
+  const content = readFileSync(`${SVG_DIR}/${file}`, 'utf-8');
+  const match = content.match(/d="([^"]+)"/);
+  if (match) {
+    const layoutId = file.replace('.svg', '');
+    paths[layoutId] = match[1];
+  }
+}
+
+const output = `// Auto-generated from julesr0y/f1-circuits-svg (CC-BY-4.0)\n// Source: circuits/minimal/white-outline/\n// Do not edit manually — re-run scripts/extract-track-paths.ts\n\nexport const TRACK_PATHS: Record<string, string> = ${JSON.stringify(paths, null, 2)};\n`;
+
+writeFileSync(OUTPUT, output);
+console.log(`Extracted ${Object.keys(paths).length} track paths to ${OUTPUT}`);
 ```
 
-**Track registry** (`data/tracks/index.ts`):
+> **Agent instruction**: During Phase 2, clone the repo, run this script, then delete the clone. The `trackPaths.ts` file is committed to the project — the repo clone is only needed once.
+
+#### 9.2.3 Full 2026 Calendar Track List
+
+Instead of just 6 tracks, we include **all 24 circuits** on the 2026 F1 calendar. The repo already has accurate SVGs for each one:
+
+| # | Circuit ID | Layout ID | Name | Country | Lap Factor | Accent Color |
+|---|-----------|-----------|------|---------|------------|--------------|
+| 1 | `melbourne` | `melbourne-2` | Melbourne Grand Prix Circuit | 🇦🇺 Australia | 0.9 | `#003580` |
+| 2 | `shanghai` | `shanghai-1` | Shanghai International Circuit | 🇨🇳 China | 1.1 | `#de2910` |
+| 3 | `suzuka` | `suzuka-2` | Suzuka Circuit | 🇯🇵 Japan | 1.1 | `#bc002d` |
+| 4 | `bahrain` | `bahrain-1` | Bahrain International Circuit | 🇧🇭 Bahrain | 1.0 | `#d4a844` |
+| 5 | `jeddah` | `jeddah-1` | Jeddah Corniche Circuit | 🇸🇦 Saudi Arabia | 1.2 | `#1a7a3a` |
+| 6 | `miami` | `miami-1` | Miami International Autodrome | 🇺🇸 USA (Miami) | 1.0 | `#f4a261` |
+| 7 | `montreal` | `montreal-6` | Circuit Gilles Villeneuve | 🇨🇦 Canada | 0.9 | `#ff0000` |
+| 8 | `monaco` | `monaco-6` | Circuit de Monaco | 🇲🇨 Monaco | 0.6 | `#c8102e` |
+| 9 | `catalunya` | `catalunya-6` | Circuit de Barcelona-Catalunya | 🇪🇸 Spain | 1.0 | `#f1bf00` |
+| 10 | `spielberg` | `spielberg-3` | Red Bull Ring | 🇦🇹 Austria | 0.7 | `#ed1c24` |
+| 11 | `silverstone` | `silverstone-8` | Silverstone Circuit | 🇬🇧 Great Britain | 1.0 | `#012169` |
+| 12 | `spa-francorchamps` | `spa-francorchamps-4` | Circuit de Spa-Francorchamps | 🇧🇪 Belgium | 1.3 | `#fdda24` |
+| 13 | `hungaroring` | `hungaroring-3` | Hungaroring | 🇭🇺 Hungary | 0.9 | `#477050` |
+| 14 | `zandvoort` | `zandvoort-5` | Circuit Park Zandvoort | 🇳🇱 Netherlands | 0.7 | `#ff6600` |
+| 15 | `monza` | `monza-7` | Autodromo Nazionale Monza | 🇮🇹 Italy | 1.0 | `#009246` |
+| 16 | `madring` | `madring-1` | Circuito de Madring | 🇪🇸 Spain (Madrid) | 1.0 | `#f1bf00` |
+| 17 | `baku` | `baku-1` | Baku City Circuit | 🇦🇿 Azerbaijan | 1.2 | `#0092bc` |
+| 18 | `marina-bay` | `marina-bay-4` | Marina Bay Street Circuit | 🇸🇬 Singapore | 1.0 | `#ef3340` |
+| 19 | `austin` | `austin-1` | Circuit of the Americas | 🇺🇸 USA (Austin) | 1.1 | `#3c3b6e` |
+| 20 | `mexico-city` | `mexico-city-3` | Autódromo Hermanos Rodríguez | 🇲🇽 Mexico | 0.9 | `#006847` |
+| 21 | `interlagos` | `interlagos-2` | Autódromo José Carlos Pace | 🇧🇷 Brazil | 0.9 | `#009739` |
+| 22 | `las-vegas` | `las-vegas-1` | Las Vegas Street Circuit | 🇺🇸 USA (Las Vegas) | 1.2 | `#b4975a` |
+| 23 | `lusail` | `lusail-1` | Lusail International Circuit | 🇶🇦 Qatar | 1.0 | `#8a1538` |
+| 24 | `yas-marina` | `yas-marina-2` | Yas Marina Circuit | 🇦🇪 Abu Dhabi | 1.0 | `#c8102e` |
+
+#### 9.2.4 Track Catalog File
+
+**File**: `src/data/tracks/trackCatalog.ts`
+
+This file contains all metadata for each track. The `svgPathD` is imported from the auto-generated `trackPaths.ts`.
 
 ```typescript
 import type { Track } from '../../types/track';
-import { bahrain } from './bahrain';
-// ... other imports
+import { TRACK_PATHS } from './trackPaths';
 
-export const TRACKS: Track[] = [bahrain, /* ... */];
+// Helper to build a track entry, pulling its path from the extracted data
+function track(
+  id: string,
+  layoutId: string,
+  name: string,
+  countryId: string,
+  countryName: string,
+  flagEmoji: string,
+  lapTimeFactor: number,
+  accentColor: string
+): Track {
+  const svgPathD = TRACK_PATHS[layoutId];
+  if (!svgPathD) {
+    console.warn(`Missing SVG path for layout: ${layoutId}`);
+  }
+  return { id, layoutId, name, countryId, countryName, svgPathD: svgPathD ?? '', lapTimeFactor, accentColor, flagEmoji };
+}
+
+export const TRACK_CATALOG: Track[] = [
+  // Ordered by 2026 F1 calendar (Round 1 → Round 24)
+  track('melbourne',         'melbourne-2',            'Melbourne Grand Prix Circuit',        'australia',             'Australia',          '🇦🇺', 0.9, '#003580'),
+  track('shanghai',          'shanghai-1',             'Shanghai International Circuit',      'china',                 'China',              '🇨🇳', 1.1, '#de2910'),
+  track('suzuka',            'suzuka-2',               'Suzuka Circuit',                      'japan',                 'Japan',              '🇯🇵', 1.1, '#bc002d'),
+  track('bahrain',           'bahrain-1',              'Bahrain International Circuit',       'bahrain',               'Bahrain',            '🇧🇭', 1.0, '#d4a844'),
+  track('jeddah',            'jeddah-1',               'Jeddah Corniche Circuit',             'saudi-arabia',          'Saudi Arabia',       '🇸🇦', 1.2, '#1a7a3a'),
+  track('miami',             'miami-1',                'Miami International Autodrome',       'united-states-of-america','USA (Miami)',       '🇺🇸', 1.0, '#f4a261'),
+  track('montreal',          'montreal-6',             'Circuit Gilles Villeneuve',           'canada',                'Canada',             '🇨🇦', 0.9, '#ff0000'),
+  track('monaco',            'monaco-6',               'Circuit de Monaco',                   'monaco',                'Monaco',             '🇲🇨', 0.6, '#c8102e'),
+  track('catalunya',         'catalunya-6',            'Circuit de Barcelona-Catalunya',      'spain',                 'Spain',              '🇪🇸', 1.0, '#f1bf00'),
+  track('spielberg',         'spielberg-3',            'Red Bull Ring',                       'austria',               'Austria',            '🇦🇹', 0.7, '#ed1c24'),
+  track('silverstone',       'silverstone-8',          'Silverstone Circuit',                 'united-kingdom',        'Great Britain',      '🇬🇧', 1.0, '#012169'),
+  track('spa-francorchamps', 'spa-francorchamps-4',    'Circuit de Spa-Francorchamps',        'belgium',               'Belgium',            '🇧🇪', 1.3, '#fdda24'),
+  track('hungaroring',       'hungaroring-3',          'Hungaroring',                         'hungary',               'Hungary',            '🇭🇺', 0.9, '#477050'),
+  track('zandvoort',         'zandvoort-5',            'Circuit Park Zandvoort',              'netherlands',           'Netherlands',        '🇳🇱', 0.7, '#ff6600'),
+  track('monza',             'monza-7',                'Autodromo Nazionale Monza',           'italy',                 'Italy',              '🇮🇹', 1.0, '#009246'),
+  track('madring',           'madring-1',              'Circuito de Madring',                 'spain',                 'Spain (Madrid)',     '🇪🇸', 1.0, '#f1bf00'),
+  track('baku',              'baku-1',                 'Baku City Circuit',                   'azerbaijan',            'Azerbaijan',         '🇦🇿', 1.2, '#0092bc'),
+  track('marina-bay',        'marina-bay-4',           'Marina Bay Street Circuit',           'singapore',             'Singapore',          '🇸🇬', 1.0, '#ef3340'),
+  track('austin',            'austin-1',               'Circuit of the Americas',             'united-states-of-america','USA (Austin)',      '🇺🇸', 1.1, '#3c3b6e'),
+  track('mexico-city',       'mexico-city-3',          'Autódromo Hermanos Rodríguez',        'mexico',                'Mexico',             '🇲🇽', 0.9, '#006847'),
+  track('interlagos',        'interlagos-2',           'Autódromo José Carlos Pace',          'brazil',                'Brazil',             '🇧🇷', 0.9, '#009739'),
+  track('las-vegas',         'las-vegas-1',            'Las Vegas Street Circuit',            'united-states-of-america','USA (Las Vegas)',   '🇺🇸', 1.2, '#b4975a'),
+  track('lusail',            'lusail-1',               'Lusail International Circuit',        'qatar',                 'Qatar',              '🇶🇦', 1.0, '#8a1538'),
+  track('yas-marina',        'yas-marina-2',           'Yas Marina Circuit',                  'united-arab-emirates',  'Abu Dhabi',          '🇦🇪', 1.0, '#c8102e'),
+];
+```
+
+#### 9.2.5 Track Registry
+
+**File**: `src/data/tracks/index.ts`
+
+```typescript
+import type { Track } from '../../types/track';
+import { TRACK_CATALOG } from './trackCatalog';
+
+export const TRACKS: Track[] = TRACK_CATALOG;
 
 export function getTrackById(id: string): Track | undefined {
   return TRACKS.find(t => t.id === id);
+}
+
+export function getTrackByLayoutId(layoutId: string): Track | undefined {
+  return TRACKS.find(t => t.layoutId === layoutId);
 }
 ```
 
@@ -1148,8 +1252,8 @@ export function canActivateRegulation(
 
 **Implementation approach**:
 
-1. Render an `<svg>` element with the track's `viewBox`.
-2. Draw the track path using `<path>` with the track's `svgPath`.
+1. Render an `<svg>` element with `viewBox="0 0 500 500"` (all tracks from the f1-circuits-svg repo use this standard size).
+2. Draw the track path using `<path>` with the track's `svgPathD` attribute.
 3. The car is a small colored dot (or simple F1-car SVG icon) positioned along the path.
 4. Use the SVG `getPointAtLength()` DOM API to get the (x, y) position for any fractional progress along the path.
 
@@ -1436,17 +1540,16 @@ This is the exact sequence the autonomous agent should follow. Each phase produc
 - [ ] 1.8 Verify types compile with `npm run build` (frontend only)
 
 ### Phase 2: Static Data — Tracks and Seasons
-- [ ] 2.1 Create `src/data/tracks/bahrain.ts` (with SVG path)
-- [ ] 2.2 Create `src/data/tracks/jeddah.ts`
-- [ ] 2.3 Create `src/data/tracks/melbourne.ts`
-- [ ] 2.4 Create `src/data/tracks/suzuka.ts`
-- [ ] 2.5 Create `src/data/tracks/monaco.ts`
-- [ ] 2.6 Create `src/data/tracks/silverstone.ts`
-- [ ] 2.7 Create `src/data/tracks/index.ts` (registry)
-- [ ] 2.8 Create `src/data/seasons/season2026.ts`
-- [ ] 2.9 Create `src/data/seasons/season2025.ts`
-- [ ] 2.10 Create `src/data/seasons/index.ts` (registry)
-- [ ] 2.11 Verify data compiles
+- [ ] 2.1 Clone the f1-circuits-svg repo: `git clone https://github.com/julesr0y/f1-circuits-svg.git /tmp/f1-circuits-svg`
+- [ ] 2.2 Create `scripts/extract-track-paths.ts` (see Section 9.2.2)
+- [ ] 2.3 Run the extraction script to generate `src/data/tracks/trackPaths.ts`
+- [ ] 2.4 Delete the cloned repo: `rm -rf /tmp/f1-circuits-svg`
+- [ ] 2.5 Create `src/data/tracks/trackCatalog.ts` (all 24 tracks with metadata — see Section 9.2.4)
+- [ ] 2.6 Create `src/data/tracks/index.ts` (registry + helpers — see Section 9.2.5)
+- [ ] 2.7 Create `src/data/seasons/season2026.ts`
+- [ ] 2.8 Create `src/data/seasons/season2025.ts`
+- [ ] 2.9 Create `src/data/seasons/index.ts` (registry)
+- [ ] 2.10 Verify data compiles and all 24 tracks have valid path data
 
 ### Phase 3: State Management Stores
 - [ ] 3.1 Create `src/stores/settingsStore.ts` (with load/save persistence)
@@ -1637,7 +1740,7 @@ The icon should be a stylized F1 car or checkered flag on a dark background with
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| SVG `getPointAtLength()` performance with complex paths | Car stuttering | Keep paths simple (<50 commands). Cache total length. |
+| SVG `getPointAtLength()` performance with complex paths | Car stuttering | The f1-circuits-svg paths are optimized by SVGO. Cache `getTotalLength()` on mount. If performance is an issue, simplify paths with an SVG path simplifier tool. |
 | `requestAnimationFrame` drift when tab is in background | Timer becomes inaccurate | Tauri desktop app is always "foreground" from browser's perspective — RAF should work normally. If issues arise, fall back to `Date.now()` diff on each frame. |
 | Idle detection false positives | Unfair penalties | 120-second default is generous. Make threshold configurable. |
 | Window blur event on macOS notification center | False unfocus penalty | Add 3-second grace period before penalizing. |
@@ -1654,7 +1757,7 @@ These are NOT in scope for v1.0 but the architecture consciously accommodates th
 |---------|----------------------------------|
 | **Score/ranking system** | The `events` array on each session captures every action. A scoring module can compute scores purely from event data without changing any existing code. |
 | **New season rulesets** | Add a new file in `data/seasons/`. Register in `index.ts`. No engine changes needed. |
-| **New tracks** | Add a new file in `data/tracks/`. Register in `index.ts`. |
+| **New tracks** | The f1-circuits-svg repo contains 78 circuits with historical layouts. Re-run the extraction script and add a new entry to `trackCatalog.ts`. For non-2026 tracks (e.g., historical), the SVG data is already extracted. |
 | **System tray** | Tauri v2 supports system tray natively. Add Rust-side tray integration without touching the React app. |
 | **Global hotkeys** | Tauri v2 plugin. Would dispatch events to the session store. |
 | **Analytics/trends** | The history store has full session data. Build a dashboard screen reading from it. |
@@ -1676,6 +1779,8 @@ These are NOT in scope for v1.0 but the architecture consciously accommodates th
 | Vitest over Jest | Jest | Vitest integrates with Vite natively, faster, same API |
 | SVG 2D over Three.js 3D | React Three Fiber | Dramatically simpler, sufficient for v1.0, 3D can be swapped in later |
 | Single app window over multi-window | Tauri multi-window | Simpler state management, no IPC complexity |
+| External SVG repo over hand-drawn paths | Hand-crafting simplified SVG paths | Real accurate track layouts for all 24 circuits with zero manual drawing. Extraction is a one-time script. CC-BY-4.0 license is permissive. |
+| Extracted `d` attributes over bundled SVG files | Importing `.svg` files via Vite plugin | Simpler: no runtime loading, no extra plugins. Path strings are inlined in TypeScript and available for `getPointAtLength()` directly. |
 
 ---
 
