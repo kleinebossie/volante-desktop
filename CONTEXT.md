@@ -7,8 +7,8 @@
 ## Last Updated
 
 - **Date**: 2026-04-14
-- **By**: AI Agent (Antigravity / Claude Opus 4.6 Thinking)
-- **Session summary**: Completed Phase 4: Engine — Core Logic — steps 4.6–4.9. Created React hooks: `useTimer.ts` (bridges rAF timer to session store), `useRegulations.ts` (regulation button state + actions), `usePenaltyDetection.ts` (wires idle/unfocus detectors to penalty system), `useTrackProgress.ts` (car position on track). Phase 4 is now 100% complete (all 10 steps). `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
+- **By**: AI Agent (Antigravity / Claude Sonnet 4.6 Thinking)
+- **Session summary**: Completed Phase 5: Track Renderer Component — all 6 steps. Created `TrackRenderer.tsx` + `TrackRenderer.module.css`. Car animates around Silverstone via `getPointAtLength`, rotates with the track direction, has neon glow, racing line, progress trail, and start/finish line. Verified with hardcoded 10s animation loop in `App.tsx`. `tsc --noEmit` 0 errors; `npm run build` succeeds (46 modules). Visual test confirmed: red car moves smoothly around the circuit.
 
 ---
 
@@ -21,7 +21,7 @@
 | 2 | Static Data — Tracks and Seasons | ✅ Complete |
 | 3 | State Management Stores | ✅ Complete |
 | 4 | Engine — Core Logic | ✅ Complete |
-| 5 | Track Renderer Component | ⬜ Not Started |
+| 5 | Track Renderer Component | ✅ Complete |
 | 6 | Setup Screen | ⬜ Not Started |
 | 7 | Race Screen | ⬜ Not Started |
 | 8 | Summary Screen | ⬜ Not Started |
@@ -32,9 +32,18 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 5 — Track Renderer Component — **Not yet started**
+**Current active phase**: Phase 6 — Setup Screen — **Not yet started**
 
-**Current active sub-step**: _None — ready to begin Phase 5_
+**Current active sub-step**: _None — ready to begin Phase 6_
+
+**Phase 5 sub-step status** (all complete):
+- [x] 5.1 Create `src/components/TrackRenderer/TrackRenderer.tsx` — SVG track rendering with invisible measurement path, glow+outline+racing-line path layers
+- [x] 5.2 Implement car position via `useTrackProgress` hook → `getPointAtLength` SVG DOM API
+- [x] 5.3 Add car rotation — `rotate(angle)` in SVG transform so car always faces forward
+- [x] 5.4 Track styled: outer glow layer (18px semi-transparent), track outline (8px white-15%), racing line (2px accent color)
+- [x] 5.5 Glow/shadow effects via CSS `filter: drop-shadow` on car; glow path layer on track
+- [x] 5.6 Tested with hardcoded 10s animation loop in `App.tsx` — visual confirmed ✅ car moves around Silverstone
+- [x] Verified: `tsc --noEmit` 0 errors; `npm run build` succeeds — 46 modules
 
 **Phase 4 sub-step status** (all complete):
 - [x] 4.1 Create `src/engine/sessionStateMachine.ts` — Pure state-transition map + helpers: `canTransition()`, `getValidTransitions()`, `isTerminalState()`, `isActiveState()`, `isTickingState()`
@@ -131,6 +140,7 @@
 | BUG-R01 | 🔴 Critical | Rust 1.75 (system apt) too old — `edition2024` feature not supported by `dlopen2_derive-0.4.3` (Tauri dependency). | Installed Rust 1.94.1 via rustup (`curl https://sh.rustup.rs | sh`). New toolchain at `~/.cargo/bin/`. | 2026-04-13 |
 | BUG-R02 | 🟡 Medium | `create-tauri-app --force` deleted ARCHITECTURE.md, CONTEXT.md, PROMPT.md from the project root. | Files recovered from git history using `git show HEAD:<file>`. | 2026-04-13 |
 | BUG-R03 | 🟡 Medium | Invalid permission `fs:allow-app-read-write` in `capabilities/default.json` — this permission doesn't exist in tauri-plugin-fs v2.5. Build failed with "Permission not found" error. | Removed the invalid permission. `fs:default` is sufficient. | 2026-04-13 |
+| BUG-R04 | 🟡 Medium | Progress trail behind the car is drawn with jagged, angled lines across corners instead of following the track curve perfectly. | Replaced `getTrailPoints` polyline calculation with an identical SVG `<path>` using `stroke-dasharray` and `stroke-dashoffset` for pixel-perfect curves. | 2026-04-14 |
 
 ---
 
@@ -241,6 +251,8 @@
 | `src/hooks/useRegulations.ts` | React hook for regulation button state + activate/deactivate | ✅ Created Phase 4 |
 | `src/hooks/usePenaltyDetection.ts` | React hook wiring idle/unfocus detectors to penalty system | ✅ Created Phase 4 |
 | `src/hooks/useTrackProgress.ts` | React hook computing car position from SVG path + progress | ✅ Created Phase 4 |
+| `src/components/TrackRenderer/TrackRenderer.tsx` | SVG track renderer + animated car component | ✅ Created Phase 5 |
+| `src/components/TrackRenderer/TrackRenderer.module.css` | CSS Module: track glow, racing line, car drop-shadow, progress trail | ✅ Created Phase 5 |
 | `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
@@ -286,14 +298,42 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 4 complete — all 10 steps) |
-| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 1–4 files |
+| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 46 modules (Phase 5 complete — all 6 steps) |
+| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 1–5 files |
+| Visual: TrackRenderer car movement | 2026-04-14 | ✅ Pass | Red car moves smoothly around Silverstone; lap% counter updating |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
 | `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
+
+### Session 8 — 2026-04-14
+**Duration**: ~20 minutes
+**Phase**: Phase 5 — Track Renderer Component — **PHASE COMPLETE**
+**What was done**:
+- Step 5.1 + 5.4: Created `src/components/TrackRenderer/TrackRenderer.module.css` — CSS Module with `.trackGlow` (18px faint outer halo), `.trackPath` (8px semi-transparent white track surface), `.racingLine` (2px accent color), `.progressTrail` (3px colored lap trail), `.startFinishLine` (perpendicular white cross-line), `.car` (drop-shadow glow filter), `.testLabel` (debug text). Verified with `tsc --noEmit` 0 errors.
+- Step 5.1–5.5: Created `src/components/TrackRenderer/TrackRenderer.tsx` — Full component with 5 visual SVG layers: (1) invisible measurement path for `getPointAtLength` queries; (2) glow halo path; (3) white track outline; (4) accent-colored racing line; (5) progress trail polyline behind the car. Car is an SVG `<rect>` with cockpit highlight rectangle. Start/finish line is computed from path position 0. All positions computed via `useTrackProgress` hook (already built in Phase 4). Props: `pathD`, `lapProgress`, `accentColor`, `showDebugLabel`.
+- Step 5.2: Car position uses `useTrackProgress(pathElement, lapProgress)` which calls `getPointAtProgress()` → SVG `getPointAtLength()` → exact {x, y, angle} at current lap fraction.
+- Step 5.3: Car rotation implemented with SVG `transform="translate(x,y) rotate(angle) translate(-w/2,-h/2)"` — centers the car body on the path point and rotates it to face forward.
+- Step 5.5: Glow effects via CSS `filter: drop-shadow(0 0 6px var(--color-accent-red)) drop-shadow(0 0 12px rgba(...))` on the car group; separate wide stroke glow path under the track.
+- Step 5.6: Updated `App.tsx` to use animated `requestAnimationFrame` loop cycling `lapProgress` from 0→1 over 10 seconds. Also updated `App.css` `.app-shell` to column flex layout. Visual test confirmed: Silverstone circuit renders correctly with red car moving at 57.7% in screenshot 1, 38.6% in screenshot 2 (different cycle points). Trail visible behind car.
+- Corrected track layout ID from `silverstone-2010` → `silverstone-8` (the correct key from `trackCatalog.ts`).
+- **Phase 5 is now 100% complete** — all 6 sub-steps done.
+
+**What's next**:
+- Begin Phase 6: Setup Screen
+  - Create `TrackSelector` component (scrollable card grid)
+  - Create `DurationPicker` component
+  - Create `StrategyNote` component
+  - Assemble into `SetupScreen`, wire to `sessionStore.createSession()`
+
+**Issues encountered**:
+- Minor: Layout ID guessed wrong (`silverstone-2010` doesn't exist). Fixed by checking `trackCatalog.ts`. No impact.
+- Layout: Track SVG renders in upper-left in the test view. This is expected — the Phase 0 `App.css` shell uses centered flexbox not well-suited for column layouts. Updated `.app-shell` to flex-direction column. This will be fully resolved in Phase 10.
+- Bug: Progress trail drawn with `getTrailPoints` and `<polyline>` was jagged. Fixed by rendering a duplicate `<path>` utilizing `stroke-dasharray` and `stroke-dashoffset` to ensure flawlessly smooth, pixel-perfect curve tracking (BUG-R04).
+
+---
 
 ### Session 7 — 2026-04-14
 **Duration**: ~10 minutes
