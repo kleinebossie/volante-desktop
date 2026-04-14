@@ -6,9 +6,9 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-13
+- **Date**: 2026-04-14
 - **By**: AI Agent (Antigravity / Claude Sonnet 4.6)
-- **Session summary**: Completed Phase 0: Project Scaffolding in full (steps 0.1–0.8). `npm run tauri dev` launches successfully — the Deep Work F1 window opens with no errors.
+- **Session summary**: Completed Phase 1: Foundation — Types, Data, Design System (steps 1.1–1.8). `npm run build` passes with 0 errors. All TypeScript types, design system CSS, and utility modules created.
 
 ---
 
@@ -17,7 +17,7 @@
 | Phase | Name | Status |
 |-------|------|--------|
 | 0 | Project Scaffolding | ✅ Complete |
-| 1 | Foundation — Types, Data, Design System | ⬜ Not Started |
+| 1 | Foundation — Types, Data, Design System | ✅ Complete |
 | 2 | Static Data — Tracks and Seasons | ⬜ Not Started |
 | 3 | State Management Stores | ⬜ Not Started |
 | 4 | Engine — Core Logic | ⬜ Not Started |
@@ -32,9 +32,19 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 1 — Foundation (Types, Data, Design System) — **Not yet started**
+**Current active phase**: Phase 2 — Static Data (Tracks and Seasons) — **Not yet started**
 
-**Current active sub-step**: _None — ready to begin Phase 1_
+**Current active sub-step**: _None — ready to begin Phase 2_
+
+**Phase 1 sub-step status** (all complete):
+- [x] 1.1 Create `src/types/track.ts`
+- [x] 1.2 Create `src/types/regulations.ts`
+- [x] 1.3 Create `src/types/session.ts`
+- [x] 1.4 Create `src/types/settings.ts`
+- [x] 1.5 Create `src/index.css` with full design system (colors, typography, reset)
+- [x] 1.6 Create `src/utils/formatTime.ts`
+- [x] 1.7 Create `src/utils/storage.ts` (Tauri filesystem wrapper)
+- [x] 1.8 Verify types compile with `npm run build` — ✅ 0 errors, 30 modules transformed
 
 **Phase 0 sub-step status** (all complete):
 - [x] 0.1 Run `create-tauri-app` with react-ts template
@@ -51,13 +61,16 @@
 ## 2. What Works Right Now
 
 - **`npm run tauri dev` launches**: App window opens with title "Deep Work F1", dark background, 🏎 placeholder — confirmed working.
-- **Frontend build**: `npm run build` (Vite + TypeScript) compiles cleanly — 0 errors.
+- **Frontend build**: `npm run build` (Vite + TypeScript) compiles cleanly — 0 errors, 30 modules.
 - **Project scaffold**: Full Tauri v2 + React 19 + TypeScript 5 project structure created.
 - **Configuration**: `tauri.conf.json` configured with correct window title, size, and identifier.
 - **Rust dependencies**: `tauri-plugin-fs` added to Cargo.toml and registered in `lib.rs`.
 - **Capabilities**: Filesystem permissions configured in `src-tauri/capabilities/default.json`.
 - **Fonts**: Google Fonts (Inter + JetBrains Mono) linked in `index.html`.
 - **Boilerplate**: Default Tauri/Vite demo content replaced with F1-themed placeholder.
+- **TypeScript types**: All 4 type definition files created (`track.ts`, `regulations.ts`, `session.ts`, `settings.ts`).
+- **Design system CSS**: `src/index.css` created with full CSS variables, reset, and base styles.
+- **Utility modules**: `formatTime.ts` (time formatting) and `storage.ts` (Tauri fs wrapper) created.
 
 ---
 
@@ -163,8 +176,15 @@
 | `vite.config.ts` | Vite build configuration | Stable (scaffold default) |
 | `tsconfig.json` | TypeScript configuration | Stable (scaffold default) |
 | `src/App.tsx` | Root React component — Phase 0 placeholder | Draft |
-| `src/App.css` | Global styles — Phase 0 placeholder only | Draft |
-| `src/main.tsx` | React/DOM entry point | Stable |
+| `src/App.css` | Phase 0 placeholder styles | Draft (replaced by index.css in Phase 1) |
+| `src/index.css` | Global design system — CSS variables, reset, base | ✅ Created Phase 1 |
+| `src/main.tsx` | React/DOM entry point — imports index.css | Stable |
+| `src/types/track.ts` | Track TypeScript interface | ✅ Created Phase 1 |
+| `src/types/regulations.ts` | RegulationConfig, SeasonRuleset, PenaltyConfig types | ✅ Created Phase 1 |
+| `src/types/session.ts` | Session, SessionEvent, SessionState types | ✅ Created Phase 1 |
+| `src/types/settings.ts` | UserSettings type + DEFAULT_SETTINGS constant | ✅ Created Phase 1 |
+| `src/utils/formatTime.ts` | Time formatting utilities (formatMMSS, formatHHMMSS, etc.) | ✅ Created Phase 1 |
+| `src/utils/storage.ts` | Tauri filesystem wrapper (readData / writeData) | ✅ Created Phase 1 |
 | `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
@@ -210,13 +230,38 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-13 | ✅ Pass | 0 errors, 29 modules transformed |
+| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 30 modules transformed |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
 | `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
+
+### Session 2 — 2026-04-14
+**Duration**: ~20 minutes
+**Phase**: Phase 1 — Foundation (Types, Data, Design System)
+**What was done**:
+- Created `src/types/track.ts` — Track and TrackPoint interfaces (step 1.1)
+- Created `src/types/regulations.ts` — RegulationConfig, SeasonRuleset, PenaltyConfig, PenaltyTrigger types (step 1.2)
+- Created `src/types/session.ts` — Session, SessionEvent, SessionState, SessionEventType types (step 1.3)
+- Created `src/types/settings.ts` — UserSettings interface + DEFAULT_SETTINGS constant (step 1.4)
+- Created `src/index.css` — full design system with CSS variables (colors, spacing, typography, shadows, transitions), global CSS reset, base body/input/button styles (step 1.5)
+- Added `import './index.css'` to `src/main.tsx` so design system loads globally (step 1.5)
+- Created `src/utils/formatTime.ts` — formatMMSS, formatHHMMSS, formatPenalty, formatMinutes, minutesToSeconds, secondsToMinutes (step 1.6)
+- Created `src/utils/storage.ts` — readData/writeData using @tauri-apps/plugin-fs v2 API with BaseDirectory.AppData (step 1.7)
+- Ran `npm run build` — 0 TypeScript errors, 30 modules, build successful (step 1.8)
+
+**What's next**:
+- Begin Phase 2: Static Data (Tracks and Seasons)
+  - Create 6 track files with SVG paths (bahrain, jeddah, melbourne, suzuka, monaco, silverstone)
+  - Create 2 season ruleset files (2025, 2026)
+  - Create index registries for both
+
+**Issues encountered**:
+- None. Phase 1 was clean.
+
+---
 
 ### Session 1 — 2026-04-13
 **Duration**: ~1 hour
