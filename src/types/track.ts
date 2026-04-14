@@ -4,12 +4,12 @@ export interface TrackPoint {
 }
 
 export interface Track {
-  id: string;                    // e.g., "bahrain"
+  id: string;                    // Circuit ID from f1-circuits-svg repo (e.g., "bahrain")
+  layoutId: string;              // Specific layout version (e.g., "bahrain-1")
   name: string;                  // e.g., "Bahrain International Circuit"
-  country: string;               // e.g., "Bahrain"
-  city: string;                  // e.g., "Sakhir"
-  svgPath: string;               // SVG <path> d attribute string
-  svgViewBox: string;            // e.g., "0 0 800 600"
+  countryId: string;             // Country slug (e.g., "bahrain", "united-kingdom")
+  countryName: string;           // Display name (e.g., "Bahrain", "United Kingdom")
+  svgPathD: string;              // SVG <path> `d` attribute string (extracted from f1-circuits-svg)
   lapTimeFactor: number;         // Multiplier: 1.0 = standard. <1 = shorter laps, >1 = longer laps
   accentColor: string;           // Hex color for track-specific theming
   flagEmoji: string;             // Country flag emoji for display
