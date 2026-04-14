@@ -302,8 +302,6 @@ deep-work-f1/
 │
 ├── ARCHITECTURE.md               # This file
 ├── CONTEXT.md                    # Development state tracker
-├── idea.md                       # Original idea
-├── product-spec-v1.0.md          # Product specification
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
