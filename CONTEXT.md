@@ -8,7 +8,7 @@
 
 - **Date**: 2026-04-14
 - **By**: AI Agent (Antigravity / Claude Opus 4.6 Thinking)
-- **Session summary**: Started Phase 4: Engine — Core Logic — steps 4.1–4.3. Created `sessionStateMachine.ts` (pure state-transition helpers), `progressCalculator.ts` (lap/progress math), `regulationsEngine.ts` (activation checks, button states, cooldowns, interruption penalties). All pure-logic modules with no side effects. `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
+- **Session summary**: Continued Phase 4: Engine — Core Logic — steps 4.4, 4.5, 4.10. Created `penaltyDetector.ts` (idle + unfocus detection with Tauri window API), `timer.ts` (rAF-based timer loop), `interpolatePath.ts` (SVG path point interpolation for car positioning). `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
 
 ---
 
@@ -32,21 +32,21 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 4 — Engine: Core Logic — **In progress (4.1–4.3 done)**
+**Current active phase**: Phase 4 — Engine: Core Logic — **In progress (4.1–4.5, 4.10 done)**
 
-**Current active sub-step**: 4.4 — Create `src/engine/penaltyDetector.ts`
+**Current active sub-step**: 4.6 — Create `src/hooks/useTimer.ts`
 
-**Phase 4 sub-step status** (3 of 10 complete):
+**Phase 4 sub-step status** (6 of 10 complete):
 - [x] 4.1 Create `src/engine/sessionStateMachine.ts` — Pure state-transition map + helpers: `canTransition()`, `getValidTransitions()`, `isTerminalState()`, `isActiveState()`, `isTickingState()`
 - [x] 4.2 Create `src/engine/progressCalculator.ts` — `calculateEffectiveProgress()`, `calculateLapInfo()` (with `BASE_LAP_SECONDS=300`), `calculateOverallProgress()`, `calculateRemainingSec()`
 - [x] 4.3 Create `src/engine/regulationsEngine.ts` — `canActivateRegulation()`, `getRegulationState()`, `getCooldownRemainingSec()`, `getCooldownProgress()`, `getActiveRegulationRemainingSec()`, `getActiveRegulationProgress()`, `getRemainingUses()`, `calculateInterruptionPenalty()`, `getRegulationConfig()`
-- [ ] 4.4 Create `src/engine/penaltyDetector.ts`
-- [ ] 4.5 Create `src/engine/timer.ts`
+- [x] 4.4 Create `src/engine/penaltyDetector.ts` — `createIdleDetector()` (document event listeners with auto-repeat), `createUnfocusDetector()` (Tauri `onFocusChanged` with 3s grace period + browser fallback), `getPenaltyAmount()`, `isPenaltyEnabled()`
+- [x] 4.5 Create `src/engine/timer.ts` — `createTimer()` factory returning start/stop/pause/resume controls, rAF-based loop with 1s deltaMs safety cap
 - [ ] 4.6 Create `src/hooks/useTimer.ts`
 - [ ] 4.7 Create `src/hooks/useRegulations.ts`
 - [ ] 4.8 Create `src/hooks/usePenaltyDetection.ts`
 - [ ] 4.9 Create `src/hooks/useTrackProgress.ts`
-- [ ] 4.10 Create `src/utils/interpolatePath.ts`
+- [x] 4.10 Create `src/utils/interpolatePath.ts` — `getPointAtProgress()` (x/y/angle via SVG `getPointAtLength`), `getStartPoint()`, `getPathLength()`, `getTrailPoints()` (for progress trail)
 - [ ] Verify: `tsc --noEmit` 0 errors; `npm run build` succeeds
 
 **Phase 3 sub-step status** (all complete):
@@ -104,7 +104,8 @@
 - **Design system CSS**: `src/index.css` created with full CSS variables, reset, and base styles.
 - **Utility modules**: `formatTime.ts` (time formatting) and `storage.ts` (Tauri fs wrapper) created.
 - **State stores**: `settingsStore.ts`, `sessionStore.ts`, `historyStore.ts` — all created and wired. Settings and history auto-load from disk on app start.
-- **Engine modules (partial)**: `sessionStateMachine.ts` (state transitions), `progressCalculator.ts` (lap/progress math), `regulationsEngine.ts` (activation logic, cooldowns, button states).
+- **Engine modules**: `sessionStateMachine.ts` (state transitions), `progressCalculator.ts` (lap/progress math), `regulationsEngine.ts` (activation logic, cooldowns, button states), `penaltyDetector.ts` (idle + unfocus detection), `timer.ts` (rAF timer loop).
+- **Utility modules (Phase 4)**: `interpolatePath.ts` (SVG path point interpolation for car positioning).
 
 ---
 
@@ -232,6 +233,9 @@
 | `src/engine/sessionStateMachine.ts` | Pure state-transition helpers (canTransition, isTerminal, etc.) | ✅ Created Phase 4 |
 | `src/engine/progressCalculator.ts` | Lap calculation, overall progress, remaining time math | ✅ Created Phase 4 |
 | `src/engine/regulationsEngine.ts` | Activation checks, button states, cooldowns, interruption penalties | ✅ Created Phase 4 |
+| `src/engine/penaltyDetector.ts` | Idle + unfocus detection with Tauri window API + browser fallback | ✅ Created Phase 4 |
+| `src/engine/timer.ts` | requestAnimationFrame-based timer loop with start/stop/pause/resume | ✅ Created Phase 4 |
+| `src/utils/interpolatePath.ts` | SVG path point interpolation for car positioning on track | ✅ Created Phase 4 |
 | `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
@@ -277,14 +281,32 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 4 engine modules included) |
-| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 + Phase 3 + Phase 4 (4.1–4.3) files |
+| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 4 steps 4.1–4.5, 4.10 included) |
+| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 + Phase 3 + Phase 4 (4.1–4.5, 4.10) files |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
 | `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
+
+### Session 6 — 2026-04-14
+**Duration**: ~10 minutes
+**Phase**: Phase 4 — Engine: Core Logic (steps 4.4, 4.5, 4.10)
+**What was done**:
+- Step 4.4: Created `src/engine/penaltyDetector.ts` — Penalty detection module with two factory functions. `createIdleDetector(thresholdMs, callback)` listens for `mousemove`, `keydown`, `click` on `document`; fires callback when user idles past threshold; auto-repeats while idle; has start/stop/destroy lifecycle. `createUnfocusDetector(graceMs, callback)` uses Tauri `getCurrentWindow().onFocusChanged()` API (with browser `blur`/`focus` fallback for dev mode); 3-second grace period before firing penalty. Also exports `getPenaltyAmount(trigger, config)` and `isPenaltyEnabled(trigger, enabledTriggers)` helper functions. Verified with `tsc --noEmit` 0 errors.
+- Step 4.5: Created `src/engine/timer.ts` — requestAnimationFrame-based timer loop. `createTimer(onTick)` returns a Timer object with `start()`, `stop()`, `pause()`, `resume()`, `isRunning()`, `isPaused()`. On each frame, computes `deltaMs` since last frame and calls `onTick(deltaMs)`. Safety cap of 1000ms on deltaMs to prevent huge jumps (e.g. tab backgrounded). Pause keeps the rAF loop alive but skips processing and resets the timestamp baseline so resume doesn't get a massive delta. Verified with `tsc --noEmit` 0 errors.
+- Step 4.10: Created `src/utils/interpolatePath.ts` — SVG path interpolation utilities for car positioning. `getPointAtProgress(pathElement, progress)` returns `{x, y, angle}` using `getPointAtLength()` + angle calculation via a 2-unit look-ahead. Also: `getStartPoint()` (position at 0), `getPathLength()`, `getTrailPoints(from, to, numPoints)` (generates point array for the progress trail behind the car). Verified with `tsc --noEmit` 0 errors.
+- Full build verified: `npm run build` succeeds — 41 modules, 0 errors.
+
+**What's next**:
+- Continue Phase 4: steps 4.6–4.9
+  - Create React hooks (`useTimer`, `useRegulations`, `usePenaltyDetection`, `useTrackProgress`)
+
+**Issues encountered**:
+- None. Steps 4.4, 4.5, 4.10 were clean.
+
+---
 
 ### Session 5 — 2026-04-14
 **Duration**: ~10 minutes
