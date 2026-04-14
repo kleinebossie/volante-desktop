@@ -8,7 +8,7 @@
 
 - **Date**: 2026-04-14
 - **By**: AI Agent (Antigravity / Claude Sonnet 4.6 Thinking)
-- **Session summary**: Completed Phase 2: Static Data (Tracks and Seasons) — steps 2.1–2.10. Cloned f1-circuits-svg repo, ran extraction script, generated trackPaths.ts with 160 circuits (all 24 required layouts confirmed present). Created trackCatalog.ts, tracks/index.ts, season2026.ts, season2025.ts, seasons/index.ts. Fixed Track type in track.ts (Phase 1 had a simplified version that didn't match ARCHITECTURE.md spec). `tsc --noEmit` passes with 0 errors. `npm run build` succeeds.
+- **Session summary**: Completed Phase 3: State Management Stores — steps 3.1–3.4. Created `settingsStore.ts` (load/save persistence), `sessionStore.ts` (full session lifecycle + tick + regulations + penalties), `historyStore.ts` (past sessions, 100-cap, persisted). Wired persistence in `App.tsx` via `useEffect` on mount. `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
 
 ---
 
@@ -19,7 +19,7 @@
 | 0 | Project Scaffolding | ✅ Complete |
 | 1 | Foundation — Types, Data, Design System | ✅ Complete |
 | 2 | Static Data — Tracks and Seasons | ✅ Complete |
-| 3 | State Management Stores | ⬜ Not Started |
+| 3 | State Management Stores | ✅ Complete |
 | 4 | Engine — Core Logic | ⬜ Not Started |
 | 5 | Track Renderer Component | ⬜ Not Started |
 | 6 | Setup Screen | ⬜ Not Started |
@@ -32,9 +32,16 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 3 — State Management Stores — **Not yet started**
+**Current active phase**: Phase 4 — Engine: Core Logic — **Not yet started**
 
-**Current active sub-step**: _None — ready to begin Phase 3_
+**Current active sub-step**: _None — ready to begin Phase 4_
+
+**Phase 3 sub-step status** (all complete):
+- [x] 3.1 Create `src/stores/settingsStore.ts` — UserSettings store with `loadSettings()` / `updateSettings()` / `resetSettings()`, persisted to `settings.json`
+- [x] 3.2 Create `src/stores/sessionStore.ts` — Full session lifecycle (create/start/pause/resume/complete/abandon), `tick()` for timer advancement, `activateRegulation()` / `deactivateRegulation()`, `applyPenalty()`, `addEvent()`; bonus helper `activateRegulationWithConfig()` exported for Phase 4 hooks
+- [x] 3.3 Create `src/stores/historyStore.ts` — Past sessions array, persisted to `history.json`, 100-session cap with oldest-first pruning
+- [x] 3.4 Wired persistence in `App.tsx` — `useEffect` on mount calls `loadSettings()` + `loadHistory()` asynchronously; placeholder UI preserved for Phase 10
+- [x] Verified: `tsc --noEmit` 0 errors; `npm run build` succeeds — 41 modules transformed
 
 **Phase 2 sub-step status** (all complete):
 - [x] 2.1 Clone `julesr0y/f1-circuits-svg` to `/tmp/f1-circuits-svg`
@@ -73,7 +80,7 @@
 ## 2. What Works Right Now
 
 - **`npm run tauri dev` launches**: App window opens with title "Deep Work F1", dark background, 🏎 placeholder — confirmed working.
-- **Frontend build**: `npm run build` (Vite + TypeScript) compiles cleanly — 0 errors, 30 modules.
+- **Frontend build**: `npm run build` (Vite + TypeScript) compiles cleanly — 0 errors, 41 modules.
 - **Project scaffold**: Full Tauri v2 + React 19 + TypeScript 5 project structure created.
 - **Configuration**: `tauri.conf.json` configured with correct window title, size, and identifier.
 - **Rust dependencies**: `tauri-plugin-fs` added to Cargo.toml and registered in `lib.rs`.
@@ -83,6 +90,7 @@
 - **TypeScript types**: All 4 type definition files created (`track.ts`, `regulations.ts`, `session.ts`, `settings.ts`).
 - **Design system CSS**: `src/index.css` created with full CSS variables, reset, and base styles.
 - **Utility modules**: `formatTime.ts` (time formatting) and `storage.ts` (Tauri fs wrapper) created.
+- **State stores**: `settingsStore.ts`, `sessionStore.ts`, `historyStore.ts` — all created and wired. Settings and history auto-load from disk on app start.
 
 ---
 
@@ -204,6 +212,9 @@
 | `src/data/seasons/season2026.ts` | 2026 ruleset: Boost (⚡) + Overtake (🏁) | ✅ Created Phase 2 |
 | `src/data/seasons/season2025.ts` | 2025 ruleset: DRS (🔓) + Overtake (🏁) | ✅ Created Phase 2 |
 | `src/data/seasons/index.ts` | SEASONS array + getSeasonByYear helper | ✅ Created Phase 2 |
+| `src/stores/settingsStore.ts` | UserSettings Zustand store — load/save to settings.json | ✅ Created Phase 3 |
+| `src/stores/sessionStore.ts` | Active session Zustand store — full lifecycle, tick, regulations, penalties | ✅ Created Phase 3 |
+| `src/stores/historyStore.ts` | Past sessions Zustand store — load/save to history.json, 100-cap | ✅ Created Phase 3 |
 | `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
@@ -249,14 +260,39 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 30 modules (data files not tree-shaken in yet — expected) |
-| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 files |
+| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 3 stores included) |
+| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 + Phase 3 files |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
 | `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
+
+### Session 4 — 2026-04-14
+**Duration**: ~20 minutes
+**Phase**: Phase 3 — State Management Stores
+**What was done**:
+- Step 3.1: Created `src/stores/settingsStore.ts` — Zustand store for `UserSettings`. Implements `loadSettings()` (reads `settings.json`, merges over `DEFAULT_SETTINGS`), `updateSettings(partial)` (partial merge + persist), `resetSettings()` (restore defaults + persist). Verified with `tsc --noEmit` 0 errors.
+- Step 3.2: Created `src/stores/sessionStore.ts` — Zustand store holding the active `Session | null`. Implements: `createSession()` (builds a fresh Session in 'setup' state with UUIDs, empty cooldowns/usageCounts/events), `startSession()` / `pauseSession()` / `resumeSession()` / `completeSession()` / `abandonSession()` (all guarded by a `canTransition()` state-machine check), `tick(deltaMs)` (called every animation frame — advances wall time, effective progress at current pace multiplier, checks for regulation expiry, auto-completes session at 100%), `activateRegulation()` / `deactivateRegulation()`, `applyPenalty(trigger, penaltySec)`, `addEvent()`. Bonus: exported `activateRegulationWithConfig()` helper for Phase 4 hooks so they can supply real durationSec/cooldownSec from season data.
+- Step 3.3: Created `src/stores/historyStore.ts` — Zustand store for `Session[]`. Implements `loadHistory()` (reads `history.json`), `addSession(session)` (deduplicates by id, prepends new session, prunes to 100 entries, persists), `clearHistory()`.
+- Step 3.4: Updated `src/App.tsx` — Added `useEffect(() => { loadSettings(); loadHistory(); }, [])` at the top of `App()`. Both are async fire-and-forget calls; they don't block rendering. Placeholder UI kept for Phase 10.
+- Verified: `tsc --noEmit` 0 errors; `npm run build` succeeds — 41 modules transformed.
+
+**What's next**:
+- Begin Phase 4: Engine — Core Logic
+  - Create `src/engine/sessionStateMachine.ts` (pure state-transition helpers)
+  - Create `src/engine/progressCalculator.ts`
+  - Create `src/engine/regulationsEngine.ts`
+  - Create `src/engine/penaltyDetector.ts`
+  - Create `src/engine/timer.ts`
+  - Create React hooks (`useTimer`, `useRegulations`, `usePenaltyDetection`, `useTrackProgress`)
+  - Create `src/utils/interpolatePath.ts`
+
+**Issues encountered**:
+- None. Phase 3 was clean.
+
+---
 
 ### Session 3 — 2026-04-14
 **Duration**: ~15 minutes
