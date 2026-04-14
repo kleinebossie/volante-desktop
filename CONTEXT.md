@@ -8,7 +8,7 @@
 
 - **Date**: 2026-04-14
 - **By**: AI Agent (Antigravity / Claude Opus 4.6 Thinking)
-- **Session summary**: Continued Phase 4: Engine — Core Logic — steps 4.4, 4.5, 4.10. Created `penaltyDetector.ts` (idle + unfocus detection with Tauri window API), `timer.ts` (rAF-based timer loop), `interpolatePath.ts` (SVG path point interpolation for car positioning). `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
+- **Session summary**: Completed Phase 4: Engine — Core Logic — steps 4.6–4.9. Created React hooks: `useTimer.ts` (bridges rAF timer to session store), `useRegulations.ts` (regulation button state + actions), `usePenaltyDetection.ts` (wires idle/unfocus detectors to penalty system), `useTrackProgress.ts` (car position on track). Phase 4 is now 100% complete (all 10 steps). `tsc --noEmit` passes 0 errors; `npm run build` succeeds (41 modules).
 
 ---
 
@@ -20,7 +20,7 @@
 | 1 | Foundation — Types, Data, Design System | ✅ Complete |
 | 2 | Static Data — Tracks and Seasons | ✅ Complete |
 | 3 | State Management Stores | ✅ Complete |
-| 4 | Engine — Core Logic | 🔨 In Progress |
+| 4 | Engine — Core Logic | ✅ Complete |
 | 5 | Track Renderer Component | ⬜ Not Started |
 | 6 | Setup Screen | ⬜ Not Started |
 | 7 | Race Screen | ⬜ Not Started |
@@ -32,22 +32,22 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 4 — Engine: Core Logic — **In progress (4.1–4.5, 4.10 done)**
+**Current active phase**: Phase 5 — Track Renderer Component — **Not yet started**
 
-**Current active sub-step**: 4.6 — Create `src/hooks/useTimer.ts`
+**Current active sub-step**: _None — ready to begin Phase 5_
 
-**Phase 4 sub-step status** (6 of 10 complete):
+**Phase 4 sub-step status** (all complete):
 - [x] 4.1 Create `src/engine/sessionStateMachine.ts` — Pure state-transition map + helpers: `canTransition()`, `getValidTransitions()`, `isTerminalState()`, `isActiveState()`, `isTickingState()`
 - [x] 4.2 Create `src/engine/progressCalculator.ts` — `calculateEffectiveProgress()`, `calculateLapInfo()` (with `BASE_LAP_SECONDS=300`), `calculateOverallProgress()`, `calculateRemainingSec()`
 - [x] 4.3 Create `src/engine/regulationsEngine.ts` — `canActivateRegulation()`, `getRegulationState()`, `getCooldownRemainingSec()`, `getCooldownProgress()`, `getActiveRegulationRemainingSec()`, `getActiveRegulationProgress()`, `getRemainingUses()`, `calculateInterruptionPenalty()`, `getRegulationConfig()`
 - [x] 4.4 Create `src/engine/penaltyDetector.ts` — `createIdleDetector()` (document event listeners with auto-repeat), `createUnfocusDetector()` (Tauri `onFocusChanged` with 3s grace period + browser fallback), `getPenaltyAmount()`, `isPenaltyEnabled()`
 - [x] 4.5 Create `src/engine/timer.ts` — `createTimer()` factory returning start/stop/pause/resume controls, rAF-based loop with 1s deltaMs safety cap
-- [ ] 4.6 Create `src/hooks/useTimer.ts`
-- [ ] 4.7 Create `src/hooks/useRegulations.ts`
-- [ ] 4.8 Create `src/hooks/usePenaltyDetection.ts`
-- [ ] 4.9 Create `src/hooks/useTrackProgress.ts`
+- [x] 4.6 Create `src/hooks/useTimer.ts` — React hook bridging rAF timer to session store `tick()`; auto-starts/pauses/stops based on session state
+- [x] 4.7 Create `src/hooks/useRegulations.ts` — React hook providing `RegulationInfo[]` (button state, cooldowns, uses) + `activate()` / `deactivate()` actions
+- [x] 4.8 Create `src/hooks/usePenaltyDetection.ts` — React hook wiring idle + unfocus detectors to `applyPenalty()`; handles regulation interruption penalties
+- [x] 4.9 Create `src/hooks/useTrackProgress.ts` — React hook computing car (x, y, angle) from SVG path ref + lap progress fraction
 - [x] 4.10 Create `src/utils/interpolatePath.ts` — `getPointAtProgress()` (x/y/angle via SVG `getPointAtLength`), `getStartPoint()`, `getPathLength()`, `getTrailPoints()` (for progress trail)
-- [ ] Verify: `tsc --noEmit` 0 errors; `npm run build` succeeds
+- [x] Verified: `tsc --noEmit` 0 errors; `npm run build` succeeds — 41 modules
 
 **Phase 3 sub-step status** (all complete):
 - [x] 3.1 Create `src/stores/settingsStore.ts` — UserSettings store with `loadSettings()` / `updateSettings()` / `resetSettings()`, persisted to `settings.json`
@@ -106,6 +106,7 @@
 - **State stores**: `settingsStore.ts`, `sessionStore.ts`, `historyStore.ts` — all created and wired. Settings and history auto-load from disk on app start.
 - **Engine modules**: `sessionStateMachine.ts` (state transitions), `progressCalculator.ts` (lap/progress math), `regulationsEngine.ts` (activation logic, cooldowns, button states), `penaltyDetector.ts` (idle + unfocus detection), `timer.ts` (rAF timer loop).
 - **Utility modules (Phase 4)**: `interpolatePath.ts` (SVG path point interpolation for car positioning).
+- **React hooks**: `useTimer.ts` (timer ↔ store bridge), `useRegulations.ts` (regulation button state + actions), `usePenaltyDetection.ts` (penalty detection wiring), `useTrackProgress.ts` (car position calculation).
 
 ---
 
@@ -236,6 +237,10 @@
 | `src/engine/penaltyDetector.ts` | Idle + unfocus detection with Tauri window API + browser fallback | ✅ Created Phase 4 |
 | `src/engine/timer.ts` | requestAnimationFrame-based timer loop with start/stop/pause/resume | ✅ Created Phase 4 |
 | `src/utils/interpolatePath.ts` | SVG path point interpolation for car positioning on track | ✅ Created Phase 4 |
+| `src/hooks/useTimer.ts` | React hook bridging rAF timer to session store tick() | ✅ Created Phase 4 |
+| `src/hooks/useRegulations.ts` | React hook for regulation button state + activate/deactivate | ✅ Created Phase 4 |
+| `src/hooks/usePenaltyDetection.ts` | React hook wiring idle/unfocus detectors to penalty system | ✅ Created Phase 4 |
+| `src/hooks/useTrackProgress.ts` | React hook computing car position from SVG path + progress | ✅ Created Phase 4 |
 | `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
@@ -281,14 +286,36 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 4 steps 4.1–4.5, 4.10 included) |
-| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 + Phase 3 + Phase 4 (4.1–4.5, 4.10) files |
+| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 41 modules (Phase 4 complete — all 10 steps) |
+| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 1–4 files |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
 | `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
+
+### Session 7 — 2026-04-14
+**Duration**: ~10 minutes
+**Phase**: Phase 4 — Engine: Core Logic (steps 4.6–4.9) — **PHASE COMPLETE**
+**What was done**:
+- Step 4.6: Created `src/hooks/useTimer.ts` — React hook that bridges the rAF timer engine to the session store. Creates a `Timer` instance on mount, auto-starts/resumes when session is 'running', pauses when 'paused', stops when completed/abandoned/null. Cleans up on unmount. Uses `useRef` for stable timer reference. Subscribes to `session.state` only (minimal re-renders). Verified with `tsc --noEmit` 0 errors.
+- Step 4.7: Created `src/hooks/useRegulations.ts` — React hook providing `UseRegulationsResult` with: `ruleset` (season lookup), `regulations` (array of `RegulationInfo` per button — state, canActivate, cooldown, active timer, remaining uses), `activeRegulation`, `activate(type)` (validates via engine then calls `activateRegulationWithConfig`), `deactivate()`. Uses `useMemo` for derived data and `useCallback` for stable handlers. Verified with `tsc --noEmit` 0 errors.
+- Step 4.8: Created `src/hooks/usePenaltyDetection.ts` — React hook that creates idle + unfocus detectors on mount, starts/stops them based on session state, and applies penalties via `applyPenalty()`. Handles regulation interruption: if a regulation is active when a penalty fires, applies the enhanced penalty (base × multiplier), logs a `regulation_interrupted` event, and deactivates the regulation. Reads idle threshold from settings store. Verified with `tsc --noEmit` 0 errors.
+- Step 4.9: Created `src/hooks/useTrackProgress.ts` — React hook that takes an SVG `<path>` ref + lap progress (0–1) and returns `{ x, y, angle }` for car positioning. Uses `useMemo` wrapping `getPointAtProgress()` from interpolatePath. Returns safe defaults when path ref is null. Verified with `tsc --noEmit` 0 errors.
+- Full build verified: `npm run build` succeeds — 41 modules, 0 errors.
+- **Phase 4 is now 100% complete** — all 10 sub-steps done.
+
+**What's next**:
+- Begin Phase 5: Track Renderer Component
+  - Create `TrackRenderer` component with SVG rendering
+  - Implement car position interpolation using `getPointAtLength`
+  - Add car rotation, track styling, glow effects
+
+**Issues encountered**:
+- None. Steps 4.6–4.9 were clean.
+
+---
 
 ### Session 6 — 2026-04-14
 **Duration**: ~10 minutes
