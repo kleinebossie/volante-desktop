@@ -7,8 +7,8 @@
 ## Last Updated
 
 - **Date**: 2026-04-14
-- **By**: AI Agent (Antigravity / Claude Sonnet 4.6)
-- **Session summary**: Completed Phase 1: Foundation — Types, Data, Design System (steps 1.1–1.8). `npm run build` passes with 0 errors. All TypeScript types, design system CSS, and utility modules created.
+- **By**: AI Agent (Antigravity / Claude Sonnet 4.6 Thinking)
+- **Session summary**: Completed Phase 2: Static Data (Tracks and Seasons) — steps 2.1–2.10. Cloned f1-circuits-svg repo, ran extraction script, generated trackPaths.ts with 160 circuits (all 24 required layouts confirmed present). Created trackCatalog.ts, tracks/index.ts, season2026.ts, season2025.ts, seasons/index.ts. Fixed Track type in track.ts (Phase 1 had a simplified version that didn't match ARCHITECTURE.md spec). `tsc --noEmit` passes with 0 errors. `npm run build` succeeds.
 
 ---
 
@@ -18,7 +18,7 @@
 |-------|------|--------|
 | 0 | Project Scaffolding | ✅ Complete |
 | 1 | Foundation — Types, Data, Design System | ✅ Complete |
-| 2 | Static Data — Tracks and Seasons | ⬜ Not Started |
+| 2 | Static Data — Tracks and Seasons | ✅ Complete |
 | 3 | State Management Stores | ⬜ Not Started |
 | 4 | Engine — Core Logic | ⬜ Not Started |
 | 5 | Track Renderer Component | ⬜ Not Started |
@@ -32,9 +32,21 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 2 — Static Data (Tracks and Seasons) — **Not yet started**
+**Current active phase**: Phase 3 — State Management Stores — **Not yet started**
 
-**Current active sub-step**: _None — ready to begin Phase 2_
+**Current active sub-step**: _None — ready to begin Phase 3_
+
+**Phase 2 sub-step status** (all complete):
+- [x] 2.1 Clone `julesr0y/f1-circuits-svg` to `/tmp/f1-circuits-svg`
+- [x] 2.2 Create `scripts/extract-track-paths.ts`
+- [x] 2.3 Run extraction script → generated `src/data/tracks/trackPaths.ts` (160 circuits, all 24 required layouts present)
+- [x] 2.4 Delete cloned repo (`rm -rf /tmp/f1-circuits-svg`)
+- [x] 2.5 Create `src/data/tracks/trackCatalog.ts` (all 24 tracks with metadata)
+- [x] 2.6 Create `src/data/tracks/index.ts` (TRACKS array + getTrackById / getTrackByLayoutId helpers)
+- [x] 2.7 Create `src/data/seasons/season2026.ts` (Boost + Overtake)
+- [x] 2.8 Create `src/data/seasons/season2025.ts` (DRS + Overtake)
+- [x] 2.9 Create `src/data/seasons/index.ts` (SEASONS registry + getSeasonByYear + DEFAULT_SEASON_YEAR)
+- [x] 2.10 Verified: `tsc --noEmit` passes 0 errors; `npm run build` succeeds
 
 **Phase 1 sub-step status** (all complete):
 - [x] 1.1 Create `src/types/track.ts`
@@ -185,6 +197,13 @@
 | `src/types/settings.ts` | UserSettings type + DEFAULT_SETTINGS constant | ✅ Created Phase 1 |
 | `src/utils/formatTime.ts` | Time formatting utilities (formatMMSS, formatHHMMSS, etc.) | ✅ Created Phase 1 |
 | `src/utils/storage.ts` | Tauri filesystem wrapper (readData / writeData) | ✅ Created Phase 1 |
+| `scripts/extract-track-paths.ts` | One-off script that extracted SVG paths from f1-circuits-svg repo | ✅ Created Phase 2 |
+| `src/data/tracks/trackPaths.ts` | **Auto-generated** — 160 SVG path `d` strings keyed by layoutId (CC-BY-4.0) | ✅ Created Phase 2 |
+| `src/data/tracks/trackCatalog.ts` | All 24 F1 2026 calendar tracks with full metadata | ✅ Created Phase 2 |
+| `src/data/tracks/index.ts` | TRACKS array + getTrackById / getTrackByLayoutId helpers | ✅ Created Phase 2 |
+| `src/data/seasons/season2026.ts` | 2026 ruleset: Boost (⚡) + Overtake (🏁) | ✅ Created Phase 2 |
+| `src/data/seasons/season2025.ts` | 2025 ruleset: DRS (🔓) + Overtake (🏁) | ✅ Created Phase 2 |
+| `src/data/seasons/index.ts` | SEASONS array + getSeasonByYear helper | ✅ Created Phase 2 |
 | `src-tauri/tauri.conf.json` | Tauri app config (title, window size, identifier) | Stable |
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
@@ -230,13 +249,40 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 30 modules transformed |
+| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 30 modules (data files not tree-shaken in yet — expected) |
+| `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 2 files |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
 | `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
 
 ---
 
 ## 12. Session Log
+
+### Session 3 — 2026-04-14
+**Duration**: ~15 minutes
+**Phase**: Phase 2 — Static Data (Tracks and Seasons)
+**What was done**:
+- Step 2.1: Cloned `julesr0y/f1-circuits-svg` repo to `/tmp/f1-circuits-svg`
+- Step 2.2: Created `scripts/extract-track-paths.ts` (as specified in ARCHITECTURE.md §9.2.2)
+- Step 2.3: Ran extraction via `npx ts-node scripts/extract-track-paths.ts` → generated `src/data/tracks/trackPaths.ts` with 160 circuit layouts; all 24 required 2026 calendar layouts confirmed present
+- Step 2.4: Deleted cloned repo (`rm -rf /tmp/f1-circuits-svg`)
+- Step 2.5: Created `src/data/tracks/trackCatalog.ts` — all 24 tracks with id, layoutId, name, countryId, countryName, flagEmoji, lapTimeFactor, accentColor
+- Step 2.6: Created `src/data/tracks/index.ts` — TRACKS array, getTrackById(), getTrackByLayoutId()
+- Step 2.7: Created `src/data/seasons/season2026.ts` — Boost (2x, 30s, unlimited) + Overtake (2.5x, 20s, 3 max)
+- Step 2.8: Created `src/data/seasons/season2025.ts` — DRS (1.5x, 45s, unlimited) + Overtake (2.5x, 20s, 3 max)
+- Step 2.9: Created `src/data/seasons/index.ts` — SEASONS[], getSeasonByYear(), DEFAULT_SEASON_YEAR=2026
+- Step 2.10: `tsc --noEmit` passes 0 errors; `npm run build` succeeds
+- **Bug fixed**: `src/types/track.ts` Phase 1 had simplified fields (country, city, svgPath, svgViewBox) that didn't match ARCHITECTURE.md §7.1. Updated to spec (layoutId, countryId, countryName, svgPathD).
+
+**What's next**:
+- Begin Phase 3: State Management Stores
+  - Create `src/stores/settingsStore.ts`, `sessionStore.ts`, `historyStore.ts`
+  - Wire persistence: settings load on app start, save on change
+
+**Issues encountered**:
+- Track type mismatch: Phase 1 built a simpler Track interface. Updated to match the full spec in ARCHITECTURE.md §7.1.
+
+---
 
 ### Session 2 — 2026-04-14
 **Duration**: ~20 minutes
@@ -254,9 +300,6 @@
 
 **What's next**:
 - Begin Phase 2: Static Data (Tracks and Seasons)
-  - Create 6 track files with SVG paths (bahrain, jeddah, melbourne, suzuka, monaco, silverstone)
-  - Create 2 season ruleset files (2025, 2026)
-  - Create index registries for both
 
 **Issues encountered**:
 - None. Phase 1 was clean.
