@@ -15,16 +15,11 @@ export function TrackSelector({ selectedTrackId, onSelectTrack }: TrackSelectorP
   const orderedTracks = useMemo(() => {
     const favoriteSet = new Set(favoriteTrackIds);
 
-    return [...TRACKS].sort((a, b) => {
-      const aFav = favoriteSet.has(a.id);
-      const bFav = favoriteSet.has(b.id);
+    // Keep catalog order (2026 calendar order) while pinning favorites first.
+    const favoriteTracks = TRACKS.filter((track) => favoriteSet.has(track.id));
+    const nonFavoriteTracks = TRACKS.filter((track) => !favoriteSet.has(track.id));
 
-      if (aFav === bFav) {
-        return a.name.localeCompare(b.name);
-      }
-
-      return aFav ? -1 : 1;
-    });
+    return [...favoriteTracks, ...nonFavoriteTracks];
   }, [favoriteTrackIds]);
 
   return (
