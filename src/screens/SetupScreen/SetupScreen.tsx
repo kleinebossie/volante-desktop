@@ -6,6 +6,7 @@ import { TrackSelector } from '../../components/TrackSelector/TrackSelector';
 import { DurationPicker } from '../../components/DurationPicker/DurationPicker';
 import { StrategyNote } from '../../components/StrategyNote/StrategyNote';
 import { SEASONS } from '../../data/seasons';
+import { SettingsScreen } from '../SettingsScreen/SettingsScreen';
 import { PenaltyTrigger } from '../../types/regulations';
 import { formatMMSS } from '../../utils/formatTime';
 import styles from './SetupScreen.module.css';
@@ -25,6 +26,7 @@ export function SetupScreen() {
   const [strategyNote, setStrategyNote] = useState<string>('');
   const [parcFerme, setParcFerme] = useState<boolean>(settings.parcFermeDefault);
   const [penaltyTriggers, setPenaltyTriggers] = useState<PenaltyTrigger[]>(settings.defaultPenaltyTriggers);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     if (!setupSession) {
@@ -64,7 +66,13 @@ export function SetupScreen() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.appTitle}>Deep Work F1</h1>
-        <button className={styles.settingsButton}>⚙️ Settings</button>
+        <button
+          type="button"
+          className={styles.settingsButton}
+          onClick={() => setIsSettingsOpen(true)}
+        >
+          ⚙️ Settings
+        </button>
       </header>
 
       <div className={styles.content}>
@@ -150,6 +158,8 @@ export function SetupScreen() {
           </div>
         )}
       </div>
+
+      <SettingsScreen isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }
