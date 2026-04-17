@@ -253,6 +253,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       session: {
         ...session,
         state: 'completed',
+        activeRegulation: null,
+        regulationEndTime: null,
+        currentPaceMultiplier: 1.0,
         completedAt: now,
         events: [...session.events, event],
       },
@@ -272,6 +275,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       session: {
         ...session,
         state: 'abandoned',
+        activeRegulation: null,
+        regulationEndTime: null,
+        currentPaceMultiplier: 1.0,
         completedAt: now,
         events: [...session.events, event],
       },

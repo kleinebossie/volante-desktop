@@ -15,7 +15,7 @@
 }
 
 .appTitle {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
@@ -42,7 +42,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  max-width: 800px;
+  max-width: 840px;
   margin: 0 auto;
   width: 100%;
 }
@@ -127,9 +127,11 @@
   padding: var(--space-4);
   font-size: 18px;
   font-weight: 700;
+  letter-spacing: 0.05em;
   cursor: pointer;
   transition: all var(--transition-fast);
   margin-top: var(--space-4);
+  box-shadow: 0 0 0 rgba(225, 6, 0, 0);
 }
 
 .startButton:hover:not(:disabled) {
@@ -177,6 +179,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.recentCard:hover {
+  border-color: var(--color-border-active);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
 }
 
 .recentDate {
@@ -194,4 +202,36 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--color-text-secondary);
+}
+
+@media (max-width: 900px) {
+  .container {
+    padding: var(--space-4);
+  }
+
+  .header {
+    margin-bottom: var(--space-4);
+  }
+
+  .appTitle {
+    font-size: 22px;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .toggles {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .recentList {
+    flex-direction: column;
+  }
+
+  .startButton {
+    width: 100%;
+  }
 }
