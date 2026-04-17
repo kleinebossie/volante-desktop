@@ -1,0 +1,86 @@
+.button {
+  --regulation-accent: var(--color-accent-blue);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 150px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.button:hover:enabled {
+  border-color: color-mix(in srgb, var(--regulation-accent) 70%, white 30%);
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.icon {
+  font-size: 16px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.stateText {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.timeText {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.uses {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.available {
+  border-color: color-mix(in srgb, var(--regulation-accent) 40%, transparent 60%);
+}
+
+.active {
+  border-color: var(--regulation-accent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--regulation-accent) 35%, transparent 65%);
+}
+
+.cooldown {
+  opacity: 0.9;
+}
+
+.depleted,
+.locked,
+.unavailable {
+  opacity: 0.55;
+}
