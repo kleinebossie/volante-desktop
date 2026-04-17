@@ -68,12 +68,63 @@
 }
 
 .trackPanel {
+  position: relative;
   flex: 1;
   min-height: 240px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 70%);
   padding: var(--space-3);
+  overflow: hidden;
+}
+
+.pauseOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background-color: rgba(10, 10, 15, 0.84);
+  backdrop-filter: blur(4px);
+  z-index: 3;
+}
+
+.penaltyFlash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(225, 6, 0, 0.28), rgba(225, 6, 0, 0.06) 60%, transparent 85%);
+  z-index: 2;
+}
+
+.pauseTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.pauseHint {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.resumeOverlayButton {
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-accent-green);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  background-color: rgba(0, 210, 106, 0.16);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.resumeOverlayButton:hover {
+  transform: translateY(-1px);
+  background-color: rgba(0, 210, 106, 0.24);
 }
 
 .regulationRow {
@@ -81,6 +132,25 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   justify-content: center;
+}
+
+.pauseButton {
+  min-width: 150px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 45%, transparent 55%);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background-color: rgba(255, 215, 0, 0.1);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.pauseButton:hover {
+  transform: translateY(-1px);
+  background-color: rgba(255, 215, 0, 0.16);
 }
 
 .footerRow {
@@ -101,6 +171,74 @@
   background-color: transparent;
   color: var(--color-text-secondary);
   padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.abandonButton:hover {
+  border-color: color-mix(in srgb, var(--color-accent-red) 50%, transparent 50%);
+  color: var(--color-text-primary);
+}
+
+.confirmBackdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(10, 10, 15, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 20;
+}
+
+.confirmDialog {
+  width: min(100%, 420px);
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-secondary);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.confirmTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.confirmBody {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.confirmActions {
+  margin-top: var(--space-2);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.confirmCancel,
+.confirmDanger {
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmCancel {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.confirmDanger {
+  border: 1px solid color-mix(in srgb, var(--color-accent-red) 65%, transparent 35%);
+  background-color: rgba(225, 6, 0, 0.14);
+  color: var(--color-text-primary);
 }
 
 @media (max-width: 900px) {

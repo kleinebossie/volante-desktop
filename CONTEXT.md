@@ -8,7 +8,7 @@
 
 - **Date**: 2026-04-17
 - **By**: AI Agent (GitHub Copilot)
-- **Session summary**: Completed Phase 7 steps 7.1 to 7.6. Created `Timer`, `LapCounter`, `CooldownBar`, `RegulationButton`, `PenaltyIndicator`, and assembled `RaceScreen` with `TrackRenderer` and derived session progress data. Verified repeatedly with `npm run build` (0 errors each run) and `npm run tauri dev` startup checks.
+- **Session summary**: Completed Phase 7 steps 7.10 to 7.13. Added PAUSE/RESUME controls with overlay, ABANDON confirmation modal, stronger regulation state-driven visuals, and animation effects (active regulation glow + penalty flash). Verified with `npm run build` (0 errors) and `npm run tauri dev` startup checks.
 
 ---
 
@@ -23,7 +23,7 @@
 | 4     | Engine — Core Logic                     | ✅ Complete    |
 | 5     | Track Renderer Component                | ✅ Complete    |
 | 6     | Setup Screen                            | ✅ Complete    |
-| 7     | Race Screen                             | 🔨 In Progress |
+| 7     | Race Screen                             | ✅ Complete    |
 | 8     | Summary Screen                          | ⬜ Not Started |
 | 9     | Settings Screen                         | ⬜ Not Started |
 | 10    | App Shell & View Router                 | ⬜ Not Started |
@@ -32,9 +32,9 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 7 — Race Screen — **In Progress**
+**Current active phase**: Phase 8 — Summary Screen — **Not Started**
 
-**Current active sub-step**: _7.6 complete — next: 7.7 (`useTimer` wiring)_
+**Current active sub-step**: _None — ready to begin Phase 8_
 
 **Phase 7 sub-step status**:
 
@@ -44,13 +44,13 @@
 - [x] 7.4 Create `CooldownBar` sub-component
 - [x] 7.5 Create `PenaltyIndicator` component (penalty feed)
 - [x] 7.6 Create `RaceScreen` assembling all components + `TrackRenderer`
-- [ ] 7.7 Wire up `useTimer` hook — start the `requestAnimationFrame` loop
-- [ ] 7.8 Wire up `useRegulations` hook — button clicks
-- [ ] 7.9 Wire up `usePenaltyDetection` hook — unfocus/idle detection
-- [ ] 7.10 Add PAUSE/RESUME functionality
-- [ ] 7.11 Add ABANDON with confirmation dialog
-- [ ] 7.12 Style regulation buttons with state-dependent visual feedback
-- [ ] 7.13 Add animation effects (regulation activation glow, penalty flash)
+- [x] 7.7 Wire up `useTimer` hook — start the `requestAnimationFrame` loop
+- [x] 7.8 Wire up `useRegulations` hook — button clicks
+- [x] 7.9 Wire up `usePenaltyDetection` hook — unfocus/idle detection
+- [x] 7.10 Add PAUSE/RESUME functionality
+- [x] 7.11 Add ABANDON with confirmation dialog
+- [x] 7.12 Style regulation buttons with state-dependent visual feedback
+- [x] 7.13 Add animation effects (regulation activation glow, penalty flash)
 
 **Phase 6 sub-step status** (all complete):
 
@@ -152,6 +152,8 @@
 - **Utility modules (Phase 4)**: `interpolatePath.ts` (SVG path point interpolation for car positioning).
 - **React hooks**: `useTimer.ts` (timer ↔ store bridge), `useRegulations.ts` (regulation button state + actions), `usePenaltyDetection.ts` (penalty detection wiring), `useTrackProgress.ts` (car position calculation).
 - **Race UI components (Phase 7.1–7.6)**: `Timer`, `LapCounter`, `CooldownBar`, `RegulationButton`, `PenaltyIndicator`, and `RaceScreen` assembly with `TrackRenderer` are implemented and compiling cleanly.
+- **Race hook wiring (Phase 7.7–7.9)**: `RaceScreen` now invokes `useTimer`, `useRegulations`, and `usePenaltyDetection`; regulation buttons now call real activate handlers.
+- **Race controls + polish (Phase 7.10–7.13)**: PAUSE/RESUME behavior, ABANDON confirmation dialog, state-dependent regulation visuals, active-regulation glow animation, and penalty flash overlay are implemented.
 
 ---
 
@@ -352,17 +354,72 @@
 
 ### Manual Testing
 
-| Feature                            | Last Tested | Result  | Notes                                                                                        |
-| ---------------------------------- | ----------- | ------- | -------------------------------------------------------------------------------------------- |
-| Frontend build (`npm run build`)   | 2026-04-17  | ✅ Pass | Re-run after each Phase 7.1–7.6 major step; 0 errors every run                               |
-| `tsc --noEmit` full type-check     | 2026-04-14  | ✅ Pass | 0 errors across all Phase 1–5 files                                                          |
-| Visual: TrackRenderer car movement | 2026-04-14  | ✅ Pass | Red car moves smoothly around Silverstone; lap% counter updating                             |
-| Rust `cargo check`                 | 2026-04-13  | ✅ Pass | All 512 crates compiled, no errors                                                           |
-| `npm run tauri dev`                | 2026-04-17  | ✅ Pass | Re-run after each Phase 7.1–7.6 major step; startup reached `Running target/debug/tauri-app` |
+| Feature                            | Last Tested | Result  | Notes                                                                                    |
+| ---------------------------------- | ----------- | ------- | ---------------------------------------------------------------------------------------- |
+| Frontend build (`npm run build`)   | 2026-04-17  | ✅ Pass | Re-run after each Phase 7.10–7.13 step; 0 errors every run                               |
+| `tsc --noEmit` full type-check     | 2026-04-14  | ✅ Pass | 0 errors across all Phase 1–5 files                                                      |
+| Visual: TrackRenderer car movement | 2026-04-14  | ✅ Pass | Red car moves smoothly around Silverstone; lap% counter updating                         |
+| Rust `cargo check`                 | 2026-04-13  | ✅ Pass | All 512 crates compiled, no errors                                                       |
+| `npm run tauri dev`                | 2026-04-17  | ✅ Pass | Re-run after each Phase 7.10–7.13 step; startup reached `Running target/debug/tauri-app` |
 
 ---
 
 ## 12. Session Log
+
+### Session 12 — 2026-04-17
+
+**Duration**: ~30 minutes
+**Phase**: Phase 7 — Race Screen (steps 7.10 to 7.13) — **PHASE COMPLETE**
+**What was done**:
+
+- Step 7.10: Implemented PAUSE/RESUME functionality in `src/screens/RaceScreen/RaceScreen.tsx`.
+  - Added pause/resume control button.
+  - Added paused-state resume overlay in track panel.
+  - Applied pause penalty when configured, including regulation interruption handling when pausing during an active regulation.
+- Step 7.11: Implemented ABANDON confirmation dialog.
+  - Added modal confirmation flow with backdrop and explicit keep-racing vs abandon actions.
+  - Wired abandon action to `sessionStore.abandonSession()`.
+- Step 7.12: Improved regulation button state-dependent visual feedback in `src/components/RegulationButton/RegulationButton.module.css`.
+  - Distinct visual treatment for available, active, cooldown, depleted, locked, and unavailable states.
+  - Added state-specific status label color classes.
+- Step 7.13: Added animation effects.
+  - Active regulation glow pulse animation on regulation buttons.
+  - Penalty flash overlay animation in the track area on `penalty_applied` and `regulation_interrupted` events.
+- Verified compile and startup after each sub-step.
+
+**What's next**:
+
+- Begin Phase 8:
+  - Create `SessionSummaryCard`
+  - Build `SummaryScreen`
+  - Wire regulation usage and penalty timeline
+
+**Issues encountered**:
+
+- None blocking. All Phase 7.10–7.13 changes compile and launch successfully.
+
+### Session 11 — 2026-04-17
+
+**Duration**: ~20 minutes
+**Phase**: Phase 7 — Race Screen (steps 7.7 to 7.9) — **SUB-STEPS COMPLETE**
+**What was done**:
+
+- Step 7.7: Wired `useTimer()` into `src/screens/RaceScreen/RaceScreen.tsx` so the session `requestAnimationFrame` tick loop is now connected at the screen level.
+- Step 7.8: Replaced placeholder regulation button behavior with `useRegulations()` data + `activate(type)` actions. Regulation buttons now use real hook-provided state/progress and invoke real activation handlers.
+- Step 7.9: Wired `usePenaltyDetection()` into `RaceScreen` so unfocus and idle penalties are now connected to running sessions.
+- Kept changes scoped to existing Phase 7 files (no new files added).
+- Verified compile and startup after each sub-step.
+
+**What's next**:
+
+- Continue Phase 7 from step 7.10:
+  - Add PAUSE/RESUME functionality
+  - Add ABANDON confirmation
+  - Continue state-driven regulation styling and race interaction polish
+
+**Issues encountered**:
+
+- None blocking. All Phase 7.7–7.9 wiring changes compile successfully.
 
 ### Session 10 — 2026-04-17
 
