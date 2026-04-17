@@ -39,6 +39,7 @@ export function RegulationButton({
   const isClickable = state === 'available';
   const barProgress = state === 'active' ? activeProgress : cooldownProgress;
   const showBar = state === 'active' || state === 'cooldown';
+  const stateClassName = styles[`state_${state}`];
   const statusTime = state === 'active'
     ? `${Math.ceil(activeRemainingSec)}s`
     : state === 'cooldown'
@@ -63,7 +64,7 @@ export function RegulationButton({
       </div>
 
       <div className={styles.metaRow}>
-        <span className={styles.stateText}>{stateLabel[state]}</span>
+        <span className={`${styles.stateText} ${stateClassName}`}>{stateLabel[state]}</span>
         {statusTime ? <span className={styles.timeText}>{statusTime}</span> : null}
       </div>
 
