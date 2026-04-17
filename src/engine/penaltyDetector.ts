@@ -130,6 +130,7 @@ export function createIdleDetector(
 ): IdleDetector {
   let timerId: ReturnType<typeof setTimeout> | null = null;
   let isRunning = false;
+  let listenersAttached = false;
 
   // Reset the idle countdown — called on every user interaction
   const resetTimer = () => {
@@ -159,16 +160,20 @@ export function createIdleDetector(
 
   // Add listeners
   const addListeners = () => {
+    if (listenersAttached) return;
     for (const event of activityEvents) {
       document.addEventListener(event, resetTimer, { passive: true });
     }
+    listenersAttached = true;
   };
 
   // Remove listeners
   const removeListeners = () => {
+    if (!listenersAttached) return;
     for (const event of activityEvents) {
       document.removeEventListener(event, resetTimer);
     }
+    listenersAttached = false;
   };
 
   return {
@@ -184,10 +189,10 @@ export function createIdleDetector(
         clearTimeout(timerId);
         timerId = null;
       }
+      removeListeners();
     },
     destroy() {
       this.stop();
-      removeListeners();
     },
   };
 }
@@ -239,6 +244,7 @@ export function createUnfocusDetector(
   let isRunning = false;
   let unlistenTauri: (() => void) | null = null;
   let tauriListenerSetUp = false;
+  let destroyed = false;
 
   const handleFocusChange = (focused: boolean) => {
     if (!isRunning) return;
@@ -265,15 +271,25 @@ export function createUnfocusDetector(
 
   // Set up the Tauri window focus listener (async)
   const setupTauriListener = async () => {
-    if (tauriListenerSetUp) return;
+    if (tauriListenerSetUp || destroyed) return;
     tauriListenerSetUp = true;
 
     try {
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      if (destroyed) {
+        tauriListenerSetUp = false;
+        return;
+      }
       const currentWindow = getCurrentWindow();
       unlistenTauri = await currentWindow.onFocusChanged(({ payload: focused }) => {
         handleFocusChange(focused);
       });
+
+      if (destroyed && unlistenTauri) {
+        unlistenTauri();
+        unlistenTauri = null;
+        tauriListenerSetUp = false;
+      }
     } catch {
       // Fallback: use browser focus/blur events (for dev mode without Tauri)
       const handleBrowserBlur = () => handleFocusChange(false);
@@ -284,14 +300,21 @@ export function createUnfocusDetector(
         window.removeEventListener('blur', handleBrowserBlur);
         window.removeEventListener('focus', handleBrowserFocus);
       };
+
+      if (destroyed && unlistenTauri) {
+        unlistenTauri();
+        unlistenTauri = null;
+        tauriListenerSetUp = false;
+      }
     }
   };
 
   return {
     start() {
+      if (destroyed) return;
       if (isRunning) return;
       isRunning = true;
-      setupTauriListener();
+      void setupTauriListener();
     },
     stop() {
       isRunning = false;
@@ -301,6 +324,7 @@ export function createUnfocusDetector(
       }
     },
     destroy() {
+      destroyed = true;
       this.stop();
       if (unlistenTauri) {
         unlistenTauri();

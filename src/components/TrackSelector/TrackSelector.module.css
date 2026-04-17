@@ -51,9 +51,28 @@
   background-color: var(--color-bg-tertiary);
 }
 
+.cardHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .flag {
   font-size: 24px;
   line-height: 1;
+}
+
+.favoriteBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--track-accent) 70%, white 30%);
+  border: 1px solid color-mix(in srgb, var(--track-accent) 45%, transparent 55%);
+  border-radius: var(--radius-full);
+  padding: 2px 7px;
 }
 
 .details {
@@ -79,4 +98,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+}
+
+@media (max-width: 900px) {
+  .scrollArea {
+    gap: var(--space-3);
+  }
+
+  .trackCard {
+    flex-basis: 148px;
+    height: 94px;
+  }
 }

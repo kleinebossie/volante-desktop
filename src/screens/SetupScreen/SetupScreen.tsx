@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useSessionStore } from '../../stores/sessionStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useHistoryStore } from '../../stores/historyStore';
@@ -18,6 +19,7 @@ export function SetupScreen() {
     s.session && s.session.state === 'setup' ? s.session : null
   );
   const settings = useSettingsStore(s => s.settings);
+  const settingsLoaded = useSettingsStore(s => s.isLoaded);
   const pastSessions = useHistoryStore(s => s.sessions);
 
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
@@ -27,6 +29,27 @@ export function SetupScreen() {
   const [parcFerme, setParcFerme] = useState<boolean>(settings.parcFermeDefault);
   const [penaltyTriggers, setPenaltyTriggers] = useState<PenaltyTrigger[]>(settings.defaultPenaltyTriggers);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [defaultsHydrated, setDefaultsHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!settingsLoaded || setupSession || defaultsHydrated) {
+      return;
+    }
+
+    setDurationMin(settings.defaultDurationMin);
+    setSeasonYear(settings.defaultSeasonYear);
+    setParcFerme(settings.parcFermeDefault);
+    setPenaltyTriggers(settings.defaultPenaltyTriggers);
+    setDefaultsHydrated(true);
+  }, [
+    defaultsHydrated,
+    settings.defaultDurationMin,
+    settings.defaultPenaltyTriggers,
+    settings.defaultSeasonYear,
+    settings.parcFermeDefault,
+    settingsLoaded,
+    setupSession,
+  ]);
 
   useEffect(() => {
     if (!setupSession) {
@@ -39,6 +62,7 @@ export function SetupScreen() {
     setStrategyNote(setupSession.strategyNote);
     setParcFerme(setupSession.parcFermeEnabled);
     setPenaltyTriggers(setupSession.enabledPenaltyTriggers);
+    setDefaultsHydrated(true);
   }, [setupSession]);
 
   const togglePenalty = (trigger: PenaltyTrigger) => {
@@ -129,20 +153,29 @@ export function SetupScreen() {
           </div>
         </div>
 
-        <button 
+        <motion.button
           className={styles.startButton}
           disabled={!selectedTrackId}
           onClick={handleStartRace}
+          whileHover={selectedTrackId ? { scale: 1.01, y: -1 } : undefined}
+          whileTap={selectedTrackId ? { scale: 0.99, y: 0 } : undefined}
         >
           🏁 START RACE
-        </button>
+        </motion.button>
 
         {pastSessions.length > 0 && (
           <div className={styles.recentSessions}>
             <h3 className={styles.recentTitle}>Recent Sessions</h3>
             <div className={styles.recentList}>
               {pastSessions.slice(0, 3).map(session => (
-                <div key={session.id} className={styles.recentCard}>
+                <motion.div
+                  key={session.id}
+                  className={styles.recentCard}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  whileHover={{ y: -2 }}
+                >
                   <div className={styles.recentDate}>
                     {new Date(session.createdAt).toLocaleDateString()}
                   </div>
@@ -152,7 +185,7 @@ export function SetupScreen() {
                   <div className={styles.recentState}>
                     {session.state === 'completed' ? '🏁 Completed' : '🚫 Abandoned'}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
