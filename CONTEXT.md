@@ -1,6 +1,6 @@
 # Deep Work F1 — Development Context (Day 2)
 
-> **Purpose of this file**: This file tracks the active state of Deep Work F1 post-v1.0. It must be attached to every autonomous coding agent session. **Update this file after every coding session.**
+> **Purpose of this file**: This file tracks the active state of Deep Work F1 post-v0.1. It must be attached to every autonomous coding agent session. **Update this file after every coding session.**
 
 ---
 
@@ -89,7 +89,7 @@
 
 ---
 
-## 7. Session Log (Post v1.0)
+## 7. Session Log (Post v0.1)
 
 <!-- Add entries chronologically -->
 
@@ -104,9 +104,9 @@
 - **2026-04-17 — Phase 12 Build & Package completed (by Copilot):**
   - Ran `npm run tauri build` successfully.
   - Produced bundles:
-    - `src-tauri/target/release/bundle/deb/Deep Work F1_1.0.0_amd64.deb`
-    - `src-tauri/target/release/bundle/rpm/Deep Work F1-1.0.0-1.x86_64.rpm`
-    - `src-tauri/target/release/bundle/appimage/Deep Work F1_1.0.0_amd64.AppImage`
+    - `src-tauri/target/release/bundle/deb/Deep Work F1_0.1.0_amd64.deb`
+    - `src-tauri/target/release/bundle/rpm/Deep Work F1-0.1.0-1.x86_64.rpm`
+    - `src-tauri/target/release/bundle/appimage/Deep Work F1_0.1.0_amd64.AppImage`
   - Verified startup of built binaries with timed smoke runs (release binary and AppImage both stayed alive during checks).
   - Regenerated icons with `npm run tauri icon src-tauri/icons/icon.png`.
   - Verification rerun results:
@@ -139,7 +139,7 @@
 
 ## 8. Agent Instructions (Day 2 Workflow)
 
-1. **Protect the Baseline**: We are working on a stable v1.0 application. Do NOT refactor core state management (`sessionStore`) or core engine logic unless absolutely required by the new feature.
+1. **Protect the Baseline**: We are working on a stable v0.1 application. Do NOT refactor core state management (`sessionStore`) or core engine logic unless absolutely required by the new feature.
 2. **Follow the Architecture**: Ensure any new features strictly adhere to the patterns established in `ARCHITECTURE.md` (Zustand for state, CSS Modules for styling, modular hooks).
 3. **Branch Awareness**: We should be working on a dedicated `feature/*` branch. If we break something, we can abort the branch.
 4. **Update this Context**: Update the Active Feature sub-tasks, bugs, and add a session log entry at the end of your work.

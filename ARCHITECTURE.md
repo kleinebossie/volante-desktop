@@ -50,9 +50,9 @@ These are immovable. The agent must never violate these:
 | 3 | **Local-first data** — zero cloud dependencies | Privacy, simplicity, offline-first |
 | 4 | **Mechanical regulations, not cosmetic** | Core product principle — buttons must change session behavior |
 | 5 | **No mid-session ruleset switching** | Predictable behavior guarantee |
-| 6 | **Season rulesets are app-defined only** | No user authoring of custom rulesets in v1.0 |
+| 6 | **Season rulesets are app-defined only** | No user authoring of custom rulesets in v0.1 |
 | 7 | **Solo developer / vibe-coder friendly** | Architecture must be dead-simple to understand |
-| 8 | **SVG-based track rendering** | 2D paths, no 3D engine for v1.0 |
+| 8 | **SVG-based track rendering** | 2D paths, no 3D engine for v0.1 |
 
 ---
 
@@ -63,7 +63,7 @@ These are immovable. The agent must never violate these:
 | Technology | Version | Purpose | Install |
 |-----------|---------|---------|---------|
 | **Node.js** | >= 20 LTS | Runtime for build tooling | Pre-installed |
-| **Rust** | Latest stable | Tauri backend (minimal use in v1.0) | `rustup` |
+| **Rust** | Latest stable | Tauri backend (minimal use in v0.1) | `rustup` |
 | **Tauri CLI** | v2 (latest) | Desktop app shell, window management, system APIs | `cargo install tauri-cli` |
 | **React** | 19.x | UI component model | Via Vite template |
 | **TypeScript** | 5.x | Type safety across the frontend | Via Vite template |
@@ -86,7 +86,7 @@ These are immovable. The agent must never violate these:
 | `uuid` | Generate unique IDs for sessions/events | Project init |
 | `date-fns` | Time formatting and duration math | Project init |
 
-### 3.4 Explicitly NOT Using (v1.0)
+### 3.4 Explicitly NOT Using (v0.1)
 
 | Technology | Why Not |
 |-----------|---------|
@@ -132,7 +132,7 @@ In `src-tauri/tauri.conf.json`, set:
 ```json
 {
   "productName": "Deep Work F1",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "identifier": "com.deepworkf1.app",
   "build": {
     "frontendDist": "../dist"
@@ -1732,7 +1732,7 @@ The icon should be a stylized F1 car or checkered flag on a dark background with
 ### 13.3 Cross-Platform Notes
 
 - Tauri v2 builds natively for each platform. You need to build on macOS for macOS, on Windows for Windows, etc.
-- For v1.0 the developer will build on their own machine. CI/CD cross-compilation is a post-v1.0 concern.
+- For v0.1 the developer will build on their own machine. CI/CD cross-compilation is a post-v0.1 concern.
 
 ---
 
@@ -1751,7 +1751,7 @@ The icon should be a stylized F1 car or checkered flag on a dark background with
 
 ## 15. Future Extension Points
 
-These are NOT in scope for v1.0 but the architecture consciously accommodates them:
+These are NOT in scope for v0.1 but the architecture consciously accommodates them:
 
 | Feature | How the architecture supports it |
 |---------|----------------------------------|
@@ -1777,7 +1777,7 @@ These are NOT in scope for v1.0 but the architecture consciously accommodates th
 | requestAnimationFrame over setInterval | setInterval | RAF syncs with display refresh, avoids drift, better animation support |
 | State-based view switching over React Router | React Router | Only 3 screens, no URLs needed, simpler mental model |
 | Vitest over Jest | Jest | Vitest integrates with Vite natively, faster, same API |
-| SVG 2D over Three.js 3D | React Three Fiber | Dramatically simpler, sufficient for v1.0, 3D can be swapped in later |
+| SVG 2D over Three.js 3D | React Three Fiber | Dramatically simpler, sufficient for v0.1, 3D can be swapped in later |
 | Single app window over multi-window | Tauri multi-window | Simpler state management, no IPC complexity |
 | External SVG repo over hand-drawn paths | Hand-crafting simplified SVG paths | Real accurate track layouts for all 24 circuits with zero manual drawing. Extraction is a one-time script. CC-BY-4.0 license is permissive. |
 | Extracted `d` attributes over bundled SVG files | Importing `.svg` files via Vite plugin | Simpler: no runtime loading, no extra plugins. Path strings are inlined in TypeScript and available for `getPointAtLength()` directly. |
