@@ -6,9 +6,9 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-14
-- **By**: AI Agent (Antigravity / Claude Sonnet 4.6 Thinking)
-- **Session summary**: Completed Phase 5: Track Renderer Component — all 6 steps. Created `TrackRenderer.tsx` + `TrackRenderer.module.css`. Car animates around Silverstone via `getPointAtLength`, rotates with the track direction, has neon glow, racing line, progress trail, and start/finish line. Verified with hardcoded 10s animation loop in `App.tsx`. `tsc --noEmit` 0 errors; `npm run build` succeeds (46 modules). Visual test confirmed: red car moves smoothly around the circuit.
+- **Date**: 2026-04-17
+- **By**: AI Agent (Antigravity)
+- **Session summary**: Completed Phase 6: Setup Screen. Created `TrackSelector`, `DurationPicker`, `StrategyNote`, and the main `SetupScreen` component with their respective CSS modules. Fully wired the `SetupScreen` to use the `sessionStore` (calling `createSession` and `startSession`) as well as the history and settings stores. The components are fully styled per the design system. Verified with `npm run build` (0 errors) and launched successfully with `npm run tauri dev`.
 
 ---
 
@@ -22,7 +22,7 @@
 | 3 | State Management Stores | ✅ Complete |
 | 4 | Engine — Core Logic | ✅ Complete |
 | 5 | Track Renderer Component | ✅ Complete |
-| 6 | Setup Screen | ⬜ Not Started |
+| 6 | Setup Screen | ✅ Complete |
 | 7 | Race Screen | ⬜ Not Started |
 | 8 | Summary Screen | ⬜ Not Started |
 | 9 | Settings Screen | ⬜ Not Started |
@@ -32,9 +32,21 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 6 — Setup Screen — **Not yet started**
+**Current active phase**: Phase 6 — Setup Screen — **Complete**
 
-**Current active sub-step**: _None — ready to begin Phase 6_
+**Current active sub-step**: _None — ready to begin Phase 7_
+
+**Phase 6 sub-step status** (all complete):
+- [x] 6.1 Create `TrackSelector` component (scrollable card grid)
+- [x] 6.2 Create `DurationPicker` component
+- [x] 6.3 Create `StrategyNote` component
+- [x] 6.4 Create `SetupScreen` assembling all sub-components
+- [x] 6.5 Wire up to session store's `createSession`
+- [x] 6.6 Style everything per design system
+- [x] 6.7 Add season selector dropdown
+- [x] 6.8 Add penalty trigger toggles
+- [x] 6.9 Add START RACE button with validation
+- [x] Verified: `npm run build` 0 errors; `npm run tauri dev` launches successfully.
 
 **Phase 5 sub-step status** (all complete):
 - [x] 5.1 Create `src/components/TrackRenderer/TrackRenderer.tsx` — SVG track rendering with invisible measurement path, glow+outline+racing-line path layers
@@ -257,6 +269,14 @@
 | `src-tauri/Cargo.toml` | Rust dependencies | Stable |
 | `src-tauri/src/lib.rs` | Tauri plugin registration | Stable |
 | `src-tauri/capabilities/default.json` | Tauri permissions (fs, opener) | Stable |
+| `src/components/TrackSelector/TrackSelector.tsx` | Horizontal scrollable grid of track cards | ✅ Created Phase 6 |
+| `src/components/TrackSelector/TrackSelector.module.css` | TrackSelector styles | ✅ Created Phase 6 |
+| `src/components/DurationPicker/DurationPicker.tsx` | Duration increment/decrement input | ✅ Created Phase 6 |
+| `src/components/DurationPicker/DurationPicker.module.css` | DurationPicker styles | ✅ Created Phase 6 |
+| `src/components/StrategyNote/StrategyNote.tsx` | Strategy note text input + Parc Fermé toggle | ✅ Created Phase 6 |
+| `src/components/StrategyNote/StrategyNote.module.css` | StrategyNote styles | ✅ Created Phase 6 |
+| `src/screens/SetupScreen/SetupScreen.tsx` | Complete Setup view combining all Phase 6 components | ✅ Created Phase 6 |
+| `src/screens/SetupScreen/SetupScreen.module.css` | SetupScreen layout styles | ✅ Created Phase 6 |
 
 ---
 
@@ -298,15 +318,38 @@
 
 | Feature | Last Tested | Result | Notes |
 |---------|------------|--------|-------|
-| Frontend build (`npm run build`) | 2026-04-14 | ✅ Pass | 0 errors, 46 modules (Phase 5 complete — all 6 steps) |
+| Frontend build (`npm run build`) | 2026-04-17 | ✅ Pass | 0 errors (Phase 6 complete) |
 | `tsc --noEmit` full type-check | 2026-04-14 | ✅ Pass | 0 errors across all Phase 1–5 files |
 | Visual: TrackRenderer car movement | 2026-04-14 | ✅ Pass | Red car moves smoothly around Silverstone; lap% counter updating |
 | Rust `cargo check` | 2026-04-13 | ✅ Pass | All 512 crates compiled, no errors |
-| `npm run tauri dev` | 2026-04-13 | ✅ Pass | App window opens, no errors, compiled in 36s |
+| `npm run tauri dev` | 2026-04-17 | ✅ Pass | App window opens, compiled successfully |
 
 ---
 
 ## 12. Session Log
+
+### Session 9 — 2026-04-17
+**Duration**: ~10 minutes
+**Phase**: Phase 6 — Setup Screen — **PHASE COMPLETE**
+**What was done**:
+- Steps 6.1 to 6.3: Created individual components `TrackSelector`, `DurationPicker`, and `StrategyNote` along with their `.module.css` files inside `src/components/`. Track selector renders all 24 tracks from `TRACKS`. Duration picker allows increment/decrement by 5 min.
+- Steps 6.4 to 6.9: Created `src/screens/SetupScreen/SetupScreen.tsx` (and CSS). Assembled the sub-components. Added season selector dropdown and penalty trigger toggles mapping to the store's settings. Wired the `START RACE` button to `sessionStore.createSession()` and `startSession()`. Added recent sessions list pulling from `historyStore`.
+- Removed unused `React` imports to resolve TypeScript lint errors.
+- Verified: `npm run build` succeeds (0 errors).
+- Verified: `npm run tauri dev` launches application successfully.
+
+**What's next**:
+- Begin Phase 7: Race Screen
+  - Create `Timer` component
+  - Create `LapCounter` component
+  - Create `RegulationButton` with `CooldownBar` sub-component
+  - Create `PenaltyIndicator` component
+  - Assemble `RaceScreen`
+
+**Issues encountered**:
+- TS6133 unused `React` import errors after file creation since React 17 automatic runtime is used. Easily resolved by removing `import React from 'react';` from new components.
+
+---
 
 ### Session 8 — 2026-04-14
 **Duration**: ~20 minutes
