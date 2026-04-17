@@ -8,7 +8,7 @@
 
 - **Date**: 2026-04-17
 - **By**: AI Agent (GitHub Copilot)
-- **Session summary**: Completed Phase 7 steps 7.10 to 7.13. Added PAUSE/RESUME controls with overlay, ABANDON confirmation modal, stronger regulation state-driven visuals, and animation effects (active regulation glow + penalty flash). Verified with `npm run build` (0 errors) and `npm run tauri dev` startup checks.
+- **Session summary**: Completed Phase 8 steps 8.1 to 8.7. Added `SessionSummaryCard`, built `SummaryScreen` with regulation usage stats and penalty timeline, added Back to Setup + Race Again actions, wired auto-save of finished sessions to history, and added Setup prefill support for Race Again. Verified with `npm run build` (0 errors) and `npm run tauri dev` startup checks.
 
 ---
 
@@ -24,7 +24,7 @@
 | 5     | Track Renderer Component                | ✅ Complete    |
 | 6     | Setup Screen                            | ✅ Complete    |
 | 7     | Race Screen                             | ✅ Complete    |
-| 8     | Summary Screen                          | ⬜ Not Started |
+| 8     | Summary Screen                          | ✅ Complete    |
 | 9     | Settings Screen                         | ⬜ Not Started |
 | 10    | App Shell & View Router                 | ⬜ Not Started |
 | 11    | Polish & Bugs                           | ⬜ Not Started |
@@ -32,9 +32,19 @@
 
 **Status legend**: ⬜ Not Started · 🔨 In Progress · ✅ Complete · ⚠️ Blocked
 
-**Current active phase**: Phase 8 — Summary Screen — **Not Started**
+**Current active phase**: Phase 9 — Settings Screen — **Not Started**
 
-**Current active sub-step**: _None — ready to begin Phase 8_
+**Current active sub-step**: _None — ready to begin Phase 9_
+
+**Phase 8 sub-step status**:
+
+- [x] 8.1 Create `SessionSummaryCard` component
+- [x] 8.2 Create `SummaryScreen` with full post-race report
+- [x] 8.3 Wire up regulation usage statistics
+- [x] 8.4 Wire up penalty timeline
+- [x] 8.5 Add "Back to Setup" and "Race Again" buttons
+- [x] 8.6 Style per design system
+- [x] 8.7 Save completed session to history store
 
 **Phase 7 sub-step status**:
 
@@ -137,7 +147,7 @@
 ## 2. What Works Right Now
 
 - **`npm run tauri dev` launches**: App window opens with title "Deep Work F1", dark background, 🏎 placeholder — confirmed working.
-- **Frontend build**: `npm run build` (Vite + TypeScript) compiles cleanly — 0 errors, 41 modules.
+- **Frontend build**: `npm run build` (Vite + TypeScript) compiles cleanly — 0 errors, 46 modules.
 - **Project scaffold**: Full Tauri v2 + React 19 + TypeScript 5 project structure created.
 - **Configuration**: `tauri.conf.json` configured with correct window title, size, and identifier.
 - **Rust dependencies**: `tauri-plugin-fs` added to Cargo.toml and registered in `lib.rs`.
@@ -154,12 +164,15 @@
 - **Race UI components (Phase 7.1–7.6)**: `Timer`, `LapCounter`, `CooldownBar`, `RegulationButton`, `PenaltyIndicator`, and `RaceScreen` assembly with `TrackRenderer` are implemented and compiling cleanly.
 - **Race hook wiring (Phase 7.7–7.9)**: `RaceScreen` now invokes `useTimer`, `useRegulations`, and `usePenaltyDetection`; regulation buttons now call real activate handlers.
 - **Race controls + polish (Phase 7.10–7.13)**: PAUSE/RESUME behavior, ABANDON confirmation dialog, state-dependent regulation visuals, active-regulation glow animation, and penalty flash overlay are implemented.
+- **Summary UI (Phase 8.1–8.2)**: `SessionSummaryCard` and `SummaryScreen` components are implemented and compile cleanly.
+- **Summary logic (Phase 8.3–8.7)**: Regulation usage aggregation, penalty timeline rendering, Back to Setup / Race Again actions, and automatic save of completed/abandoned sessions to `historyStore` are wired.
+- **Race Again prefill support**: `SetupScreen` now pre-fills fields from a `setup` session, enabling Summary → Race Again to carry over track, duration, season, strategy note, Parc Fermé, and penalty triggers.
 
 ---
 
 ## 3. What's Partially Working
 
-- **Rust compilation**: Cargo builds Rust successfully WITH the new Rust 1.94 toolchain, but fails due to missing system -dev packages. The Rust edition2024 compatibility issue was resolved by installing Rust 1.94.1 via rustup.
+- _No partial items currently tracked._
 
 ---
 
@@ -250,71 +263,75 @@
 
 ## 8. File Inventory
 
-| File Path                                                     | Purpose                                                                     | Status                                   |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------- |
-| `ARCHITECTURE.md`                                             | Master architecture & build plan                                            | Stable                                   |
-| `CONTEXT.md`                                                  | This file — development state tracker                                       | Stable                                   |
-| `PROMPT.md`                                                   | AI session prompt template                                                  | Reference only                           |
-| `index.html`                                                  | HTML entry point — has Google Fonts                                         | Stable                                   |
-| `package.json`                                                | Frontend npm dependencies                                                   | Stable                                   |
-| `vite.config.ts`                                              | Vite build configuration                                                    | Stable (scaffold default)                |
-| `tsconfig.json`                                               | TypeScript configuration                                                    | Stable (scaffold default)                |
-| `src/App.tsx`                                                 | Root React component — Phase 0 placeholder                                  | Draft                                    |
-| `src/App.css`                                                 | Phase 0 placeholder styles                                                  | Draft (replaced by index.css in Phase 1) |
-| `src/index.css`                                               | Global design system — CSS variables, reset, base                           | ✅ Created Phase 1                       |
-| `src/main.tsx`                                                | React/DOM entry point — imports index.css                                   | Stable                                   |
-| `src/types/track.ts`                                          | Track TypeScript interface                                                  | ✅ Created Phase 1                       |
-| `src/types/regulations.ts`                                    | RegulationConfig, SeasonRuleset, PenaltyConfig types                        | ✅ Created Phase 1                       |
-| `src/types/session.ts`                                        | Session, SessionEvent, SessionState types                                   | ✅ Created Phase 1                       |
-| `src/types/settings.ts`                                       | UserSettings type + DEFAULT_SETTINGS constant                               | ✅ Created Phase 1                       |
-| `src/utils/formatTime.ts`                                     | Time formatting utilities (formatMMSS, formatHHMMSS, etc.)                  | ✅ Created Phase 1                       |
-| `src/utils/storage.ts`                                        | Tauri filesystem wrapper (readData / writeData)                             | ✅ Created Phase 1                       |
-| `scripts/extract-track-paths.ts`                              | One-off script that extracted SVG paths from f1-circuits-svg repo           | ✅ Created Phase 2                       |
-| `src/data/tracks/trackPaths.ts`                               | **Auto-generated** — 160 SVG path `d` strings keyed by layoutId (CC-BY-4.0) | ✅ Created Phase 2                       |
-| `src/data/tracks/trackCatalog.ts`                             | All 24 F1 2026 calendar tracks with full metadata                           | ✅ Created Phase 2                       |
-| `src/data/tracks/index.ts`                                    | TRACKS array + getTrackById / getTrackByLayoutId helpers                    | ✅ Created Phase 2                       |
-| `src/data/seasons/season2026.ts`                              | 2026 ruleset: Boost (⚡) + Overtake (🏁)                                    | ✅ Created Phase 2                       |
-| `src/data/seasons/season2025.ts`                              | 2025 ruleset: DRS (🔓) + Overtake (🏁)                                      | ✅ Created Phase 2                       |
-| `src/data/seasons/index.ts`                                   | SEASONS array + getSeasonByYear helper                                      | ✅ Created Phase 2                       |
-| `src/stores/settingsStore.ts`                                 | UserSettings Zustand store — load/save to settings.json                     | ✅ Created Phase 3                       |
-| `src/stores/sessionStore.ts`                                  | Active session Zustand store — full lifecycle, tick, regulations, penalties | ✅ Created Phase 3                       |
-| `src/stores/historyStore.ts`                                  | Past sessions Zustand store — load/save to history.json, 100-cap            | ✅ Created Phase 3                       |
-| `src/engine/sessionStateMachine.ts`                           | Pure state-transition helpers (canTransition, isTerminal, etc.)             | ✅ Created Phase 4                       |
-| `src/engine/progressCalculator.ts`                            | Lap calculation, overall progress, remaining time math                      | ✅ Created Phase 4                       |
-| `src/engine/regulationsEngine.ts`                             | Activation checks, button states, cooldowns, interruption penalties         | ✅ Created Phase 4                       |
-| `src/engine/penaltyDetector.ts`                               | Idle + unfocus detection with Tauri window API + browser fallback           | ✅ Created Phase 4                       |
-| `src/engine/timer.ts`                                         | requestAnimationFrame-based timer loop with start/stop/pause/resume         | ✅ Created Phase 4                       |
-| `src/utils/interpolatePath.ts`                                | SVG path point interpolation for car positioning on track                   | ✅ Created Phase 4                       |
-| `src/hooks/useTimer.ts`                                       | React hook bridging rAF timer to session store tick()                       | ✅ Created Phase 4                       |
-| `src/hooks/useRegulations.ts`                                 | React hook for regulation button state + activate/deactivate                | ✅ Created Phase 4                       |
-| `src/hooks/usePenaltyDetection.ts`                            | React hook wiring idle/unfocus detectors to penalty system                  | ✅ Created Phase 4                       |
-| `src/hooks/useTrackProgress.ts`                               | React hook computing car position from SVG path + progress                  | ✅ Created Phase 4                       |
-| `src/components/TrackRenderer/TrackRenderer.tsx`              | SVG track renderer + animated car component                                 | ✅ Created Phase 5                       |
-| `src/components/TrackRenderer/TrackRenderer.module.css`       | CSS Module: track glow, racing line, car drop-shadow, progress trail        | ✅ Created Phase 5                       |
-| `src-tauri/tauri.conf.json`                                   | Tauri app config (title, window size, identifier)                           | Stable                                   |
-| `src-tauri/Cargo.toml`                                        | Rust dependencies                                                           | Stable                                   |
-| `src-tauri/src/lib.rs`                                        | Tauri plugin registration                                                   | Stable                                   |
-| `src-tauri/capabilities/default.json`                         | Tauri permissions (fs, opener)                                              | Stable                                   |
-| `src/components/TrackSelector/TrackSelector.tsx`              | Horizontal scrollable grid of track cards                                   | ✅ Created Phase 6                       |
-| `src/components/TrackSelector/TrackSelector.module.css`       | TrackSelector styles                                                        | ✅ Created Phase 6                       |
-| `src/components/DurationPicker/DurationPicker.tsx`            | Duration increment/decrement input                                          | ✅ Created Phase 6                       |
-| `src/components/DurationPicker/DurationPicker.module.css`     | DurationPicker styles                                                       | ✅ Created Phase 6                       |
-| `src/components/StrategyNote/StrategyNote.tsx`                | Strategy note text input + Parc Fermé toggle                                | ✅ Created Phase 6                       |
-| `src/components/StrategyNote/StrategyNote.module.css`         | StrategyNote styles                                                         | ✅ Created Phase 6                       |
-| `src/screens/SetupScreen/SetupScreen.tsx`                     | Complete Setup view combining all Phase 6 components                        | ✅ Created Phase 6                       |
-| `src/screens/SetupScreen/SetupScreen.module.css`              | SetupScreen layout styles                                                   | ✅ Created Phase 6                       |
-| `src/components/Timer/Timer.tsx`                              | Large mono countdown display component for race sessions                    | ✅ Created Phase 7.1                     |
-| `src/components/Timer/Timer.module.css`                       | Timer component styles                                                      | ✅ Created Phase 7.1                     |
-| `src/components/LapCounter/LapCounter.tsx`                    | Lap readout component (`current/total`)                                     | ✅ Created Phase 7.2                     |
-| `src/components/LapCounter/LapCounter.module.css`             | LapCounter styles                                                           | ✅ Created Phase 7.2                     |
-| `src/components/CooldownBar/CooldownBar.tsx`                  | Cooldown progress bar sub-component                                         | ✅ Created Phase 7.4                     |
-| `src/components/CooldownBar/CooldownBar.module.css`           | CooldownBar styles                                                          | ✅ Created Phase 7.4                     |
-| `src/components/RegulationButton/RegulationButton.tsx`        | Regulation action button (state text, timer, uses, cooldown bar)            | ✅ Created Phase 7.3                     |
-| `src/components/RegulationButton/RegulationButton.module.css` | RegulationButton styles                                                     | ✅ Created Phase 7.3                     |
-| `src/components/PenaltyIndicator/PenaltyIndicator.tsx`        | Penalty feed component from session events                                  | ✅ Created Phase 7.5                     |
-| `src/components/PenaltyIndicator/PenaltyIndicator.module.css` | PenaltyIndicator styles                                                     | ✅ Created Phase 7.5                     |
-| `src/screens/RaceScreen/RaceScreen.tsx`                       | Race screen assembling all Phase 7 components + TrackRenderer               | ✅ Created Phase 7.6                     |
-| `src/screens/RaceScreen/RaceScreen.module.css`                | RaceScreen layout and responsive styles                                     | ✅ Created Phase 7.6                     |
+| File Path                                                         | Purpose                                                                                                   | Status                                   |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `ARCHITECTURE.md`                                                 | Master architecture & build plan                                                                          | Stable                                   |
+| `CONTEXT.md`                                                      | This file — development state tracker                                                                     | Stable                                   |
+| `PROMPT.md`                                                       | AI session prompt template                                                                                | Reference only                           |
+| `index.html`                                                      | HTML entry point — has Google Fonts                                                                       | Stable                                   |
+| `package.json`                                                    | Frontend npm dependencies                                                                                 | Stable                                   |
+| `vite.config.ts`                                                  | Vite build configuration                                                                                  | Stable (scaffold default)                |
+| `tsconfig.json`                                                   | TypeScript configuration                                                                                  | Stable (scaffold default)                |
+| `src/App.tsx`                                                     | Root React component — Phase 0 placeholder                                                                | Draft                                    |
+| `src/App.css`                                                     | Phase 0 placeholder styles                                                                                | Draft (replaced by index.css in Phase 1) |
+| `src/index.css`                                                   | Global design system — CSS variables, reset, base                                                         | ✅ Created Phase 1                       |
+| `src/main.tsx`                                                    | React/DOM entry point — imports index.css                                                                 | Stable                                   |
+| `src/types/track.ts`                                              | Track TypeScript interface                                                                                | ✅ Created Phase 1                       |
+| `src/types/regulations.ts`                                        | RegulationConfig, SeasonRuleset, PenaltyConfig types                                                      | ✅ Created Phase 1                       |
+| `src/types/session.ts`                                            | Session, SessionEvent, SessionState types                                                                 | ✅ Created Phase 1                       |
+| `src/types/settings.ts`                                           | UserSettings type + DEFAULT_SETTINGS constant                                                             | ✅ Created Phase 1                       |
+| `src/utils/formatTime.ts`                                         | Time formatting utilities (formatMMSS, formatHHMMSS, etc.)                                                | ✅ Created Phase 1                       |
+| `src/utils/storage.ts`                                            | Tauri filesystem wrapper (readData / writeData)                                                           | ✅ Created Phase 1                       |
+| `scripts/extract-track-paths.ts`                                  | One-off script that extracted SVG paths from f1-circuits-svg repo                                         | ✅ Created Phase 2                       |
+| `src/data/tracks/trackPaths.ts`                                   | **Auto-generated** — 160 SVG path `d` strings keyed by layoutId (CC-BY-4.0)                               | ✅ Created Phase 2                       |
+| `src/data/tracks/trackCatalog.ts`                                 | All 24 F1 2026 calendar tracks with full metadata                                                         | ✅ Created Phase 2                       |
+| `src/data/tracks/index.ts`                                        | TRACKS array + getTrackById / getTrackByLayoutId helpers                                                  | ✅ Created Phase 2                       |
+| `src/data/seasons/season2026.ts`                                  | 2026 ruleset: Boost (⚡) + Overtake (🏁)                                                                  | ✅ Created Phase 2                       |
+| `src/data/seasons/season2025.ts`                                  | 2025 ruleset: DRS (🔓) + Overtake (🏁)                                                                    | ✅ Created Phase 2                       |
+| `src/data/seasons/index.ts`                                       | SEASONS array + getSeasonByYear helper                                                                    | ✅ Created Phase 2                       |
+| `src/stores/settingsStore.ts`                                     | UserSettings Zustand store — load/save to settings.json                                                   | ✅ Created Phase 3                       |
+| `src/stores/sessionStore.ts`                                      | Active session Zustand store — full lifecycle, tick, regulations, penalties                               | ✅ Created Phase 3                       |
+| `src/stores/historyStore.ts`                                      | Past sessions Zustand store — load/save to history.json, 100-cap                                          | ✅ Created Phase 3                       |
+| `src/engine/sessionStateMachine.ts`                               | Pure state-transition helpers (canTransition, isTerminal, etc.)                                           | ✅ Created Phase 4                       |
+| `src/engine/progressCalculator.ts`                                | Lap calculation, overall progress, remaining time math                                                    | ✅ Created Phase 4                       |
+| `src/engine/regulationsEngine.ts`                                 | Activation checks, button states, cooldowns, interruption penalties                                       | ✅ Created Phase 4                       |
+| `src/engine/penaltyDetector.ts`                                   | Idle + unfocus detection with Tauri window API + browser fallback                                         | ✅ Created Phase 4                       |
+| `src/engine/timer.ts`                                             | requestAnimationFrame-based timer loop with start/stop/pause/resume                                       | ✅ Created Phase 4                       |
+| `src/utils/interpolatePath.ts`                                    | SVG path point interpolation for car positioning on track                                                 | ✅ Created Phase 4                       |
+| `src/hooks/useTimer.ts`                                           | React hook bridging rAF timer to session store tick()                                                     | ✅ Created Phase 4                       |
+| `src/hooks/useRegulations.ts`                                     | React hook for regulation button state + activate/deactivate                                              | ✅ Created Phase 4                       |
+| `src/hooks/usePenaltyDetection.ts`                                | React hook wiring idle/unfocus detectors to penalty system                                                | ✅ Created Phase 4                       |
+| `src/hooks/useTrackProgress.ts`                                   | React hook computing car position from SVG path + progress                                                | ✅ Created Phase 4                       |
+| `src/components/TrackRenderer/TrackRenderer.tsx`                  | SVG track renderer + animated car component                                                               | ✅ Created Phase 5                       |
+| `src/components/TrackRenderer/TrackRenderer.module.css`           | CSS Module: track glow, racing line, car drop-shadow, progress trail                                      | ✅ Created Phase 5                       |
+| `src-tauri/tauri.conf.json`                                       | Tauri app config (title, window size, identifier)                                                         | Stable                                   |
+| `src-tauri/Cargo.toml`                                            | Rust dependencies                                                                                         | Stable                                   |
+| `src-tauri/src/lib.rs`                                            | Tauri plugin registration                                                                                 | Stable                                   |
+| `src-tauri/capabilities/default.json`                             | Tauri permissions (fs, opener)                                                                            | Stable                                   |
+| `src/components/TrackSelector/TrackSelector.tsx`                  | Horizontal scrollable grid of track cards                                                                 | ✅ Created Phase 6                       |
+| `src/components/TrackSelector/TrackSelector.module.css`           | TrackSelector styles                                                                                      | ✅ Created Phase 6                       |
+| `src/components/DurationPicker/DurationPicker.tsx`                | Duration increment/decrement input                                                                        | ✅ Created Phase 6                       |
+| `src/components/DurationPicker/DurationPicker.module.css`         | DurationPicker styles                                                                                     | ✅ Created Phase 6                       |
+| `src/components/StrategyNote/StrategyNote.tsx`                    | Strategy note text input + Parc Fermé toggle                                                              | ✅ Created Phase 6                       |
+| `src/components/StrategyNote/StrategyNote.module.css`             | StrategyNote styles                                                                                       | ✅ Created Phase 6                       |
+| `src/screens/SetupScreen/SetupScreen.tsx`                         | Complete Setup view combining all Phase 6 components; supports Race Again prefill from setup-session data | ✅ Updated Phase 8                       |
+| `src/screens/SetupScreen/SetupScreen.module.css`                  | SetupScreen layout styles                                                                                 | ✅ Created Phase 6                       |
+| `src/components/Timer/Timer.tsx`                                  | Large mono countdown display component for race sessions                                                  | ✅ Created Phase 7.1                     |
+| `src/components/Timer/Timer.module.css`                           | Timer component styles                                                                                    | ✅ Created Phase 7.1                     |
+| `src/components/LapCounter/LapCounter.tsx`                        | Lap readout component (`current/total`)                                                                   | ✅ Created Phase 7.2                     |
+| `src/components/LapCounter/LapCounter.module.css`                 | LapCounter styles                                                                                         | ✅ Created Phase 7.2                     |
+| `src/components/CooldownBar/CooldownBar.tsx`                      | Cooldown progress bar sub-component                                                                       | ✅ Created Phase 7.4                     |
+| `src/components/CooldownBar/CooldownBar.module.css`               | CooldownBar styles                                                                                        | ✅ Created Phase 7.4                     |
+| `src/components/SessionSummaryCard/SessionSummaryCard.tsx`        | Reusable summary metrics card component                                                                   | ✅ Created Phase 8.1                     |
+| `src/components/SessionSummaryCard/SessionSummaryCard.module.css` | SessionSummaryCard styles                                                                                 | ✅ Created Phase 8.1                     |
+| `src/components/RegulationButton/RegulationButton.tsx`            | Regulation action button (state text, timer, uses, cooldown bar)                                          | ✅ Created Phase 7.3                     |
+| `src/components/RegulationButton/RegulationButton.module.css`     | RegulationButton styles                                                                                   | ✅ Created Phase 7.3                     |
+| `src/components/PenaltyIndicator/PenaltyIndicator.tsx`            | Penalty feed component from session events                                                                | ✅ Created Phase 7.5                     |
+| `src/components/PenaltyIndicator/PenaltyIndicator.module.css`     | PenaltyIndicator styles                                                                                   | ✅ Created Phase 7.5                     |
+| `src/screens/RaceScreen/RaceScreen.tsx`                           | Race screen assembling all Phase 7 components + TrackRenderer                                             | ✅ Created Phase 7.6                     |
+| `src/screens/RaceScreen/RaceScreen.module.css`                    | RaceScreen layout and responsive styles                                                                   | ✅ Created Phase 7.6                     |
+| `src/screens/SummaryScreen/SummaryScreen.tsx`                     | Summary screen with session overview, regulation usage, penalty timeline, and action buttons              | ✅ Created Phase 8.2–8.7                 |
+| `src/screens/SummaryScreen/SummaryScreen.module.css`              | SummaryScreen layout and responsive styles                                                                | ✅ Created Phase 8.6                     |
 
 ---
 
@@ -332,7 +349,7 @@
 - **Special setup steps**:
   1. Run `export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$PATH"` before any npm commands
   2. Run `source "$HOME/.cargo/env"` before any cargo commands
-  3. **PENDING USER ACTION**: Run `sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libgtk-3-dev libgdk-pixbuf-2.0-dev libssl-dev libayatana-appindicator3-dev libxdo-dev` to enable Tauri compilation
+  3. System GTK/WebKit dev packages are installed on this machine; `npm run tauri dev` startup checks are passing.
 
 ---
 
@@ -354,17 +371,56 @@
 
 ### Manual Testing
 
-| Feature                            | Last Tested | Result  | Notes                                                                                    |
-| ---------------------------------- | ----------- | ------- | ---------------------------------------------------------------------------------------- |
-| Frontend build (`npm run build`)   | 2026-04-17  | ✅ Pass | Re-run after each Phase 7.10–7.13 step; 0 errors every run                               |
-| `tsc --noEmit` full type-check     | 2026-04-14  | ✅ Pass | 0 errors across all Phase 1–5 files                                                      |
-| Visual: TrackRenderer car movement | 2026-04-14  | ✅ Pass | Red car moves smoothly around Silverstone; lap% counter updating                         |
-| Rust `cargo check`                 | 2026-04-13  | ✅ Pass | All 512 crates compiled, no errors                                                       |
-| `npm run tauri dev`                | 2026-04-17  | ✅ Pass | Re-run after each Phase 7.10–7.13 step; startup reached `Running target/debug/tauri-app` |
+| Feature                            | Last Tested | Result  | Notes                                                                          |
+| ---------------------------------- | ----------- | ------- | ------------------------------------------------------------------------------ |
+| Frontend build (`npm run build`)   | 2026-04-17  | ✅ Pass | Re-run during Phase 8 implementation; 0 TypeScript/Vite errors (46 modules)    |
+| `tsc --noEmit` full type-check     | 2026-04-14  | ✅ Pass | 0 errors across all Phase 1–5 files                                            |
+| Visual: TrackRenderer car movement | 2026-04-14  | ✅ Pass | Red car moves smoothly around Silverstone; lap% counter updating               |
+| Rust `cargo check`                 | 2026-04-13  | ✅ Pass | All 512 crates compiled, no errors                                             |
+| `npm run tauri dev`                | 2026-04-17  | ✅ Pass | Re-run after Phase 8 updates; startup reached `Running target/debug/tauri-app` |
 
 ---
 
 ## 12. Session Log
+
+### Session 13 — 2026-04-17
+
+**Duration**: ~35 minutes  
+**Phase**: Phase 8 — Summary Screen (steps 8.1 to 8.7) — **PHASE COMPLETE**
+**What was done**:
+
+- Step 8.1: Created `src/components/SessionSummaryCard/SessionSummaryCard.tsx` and `SessionSummaryCard.module.css`.
+  - Built a reusable summary card for key post-race metrics with clear label/value rows and tone styles.
+- Step 8.2: Created `src/screens/SummaryScreen/SummaryScreen.tsx` and `SummaryScreen.module.css`.
+  - Added summary header, overview card, regulation usage panel, penalty timeline panel, strategy panel, and action footer.
+- Step 8.3: Wired regulation usage statistics from session events.
+  - Counts regulation activations and computes total active duration from activate/deactivate/interrupted event pairs.
+- Step 8.4: Wired penalty timeline from session events.
+  - Renders timestamped entries for `penalty_applied` and `regulation_interrupted` events, including formatted penalty amounts.
+- Step 8.5: Added **Back to Setup** and **Race Again** buttons in `SummaryScreen`.
+  - Back to Setup clears the active session.
+  - Race Again creates a new `setup` session prefilled from the finished session config.
+- Step 8.6: Added responsive design-system styling for Summary screen and SessionSummaryCard.
+- Step 8.7: Wired finished-session persistence to history.
+  - `SummaryScreen` now auto-saves completed/abandoned sessions via `historyStore.addSession()`.
+  - `historyStore` deduplication protects against double-save.
+- Follow-up support for 8.5 prefill: Updated `src/screens/SetupScreen/SetupScreen.tsx` to hydrate local form fields from an existing `setup` session.
+
+**Verification**:
+
+- `npm run build` — ✅ Pass (0 errors).
+- `npm run tauri dev` — ✅ Pass (startup reached `Running target/debug/tauri-app`).
+
+**What's next**:
+
+- Begin Phase 9:
+  - Create `SettingsScreen` modal overlay
+  - Wire all settings controls to `settingsStore`
+  - Add open/close trigger from Setup header with animation
+
+**Issues encountered**:
+
+- None blocking. Phase 8 files compile and startup checks pass.
 
 ### Session 12 — 2026-04-17
 
