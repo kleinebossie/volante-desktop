@@ -1,6 +1,6 @@
 # Deep Work F1 — Prompt Template & Vibe Coding Guide (Day 2)
 
-> **Who is this for?** You — Joe. You have successfully finished v1.0. This is your new prompt template and workflow guide for adding features (Day 2 operations) safely without breaking your stable app.
+> **Who is this for?** You — Joe. You have successfully finished v0.1. This is your new prompt template and workflow guide for adding features (Day 2 operations) safely without breaking your stable app.
 
 ---
 
@@ -24,7 +24,7 @@ You are an expert software engineer maintaining and extending a stable, complete
 
 ## Project Context
 
-This is a cross-platform desktop deep-work timer app. We have already reached v1.0, meaning the core engine, UI, and state management are **stable and working perfectly**.
+This is a cross-platform desktop deep-work timer app. We have already reached v0.1, meaning the core engine, UI, and state management are **stable and working perfectly**.
 
 Attached are:
 
@@ -43,7 +43,7 @@ _[e.g., "The app should play a success sound when the timer finishes, without br
 
 ## Critical Day-2 Rules
 
-1. **Do NOT break v1.0**: Do not rewrite, refactor, or delete existing core logic (`sessionStore`, `timer` engine, state machines) unless absolutely 100% required for this feature.
+1. **Do NOT break v0.1**: Do not rewrite, refactor, or delete existing core logic (`sessionStore`, `timer` engine, state machines) unless absolutely 100% required for this feature.
 2. **Follow Existing Patterns**: If you add a new store, use Zustand. If you add UI, use CSS Modules matching `index.css`.
 3. **Keep it isolated**: If possible, build the new feature as an independent React hook or utility that plugs into the existing architecture rather than mangling the core engine.
 4. **Update `CONTEXT.md`** at the end of your work with:
@@ -62,7 +62,7 @@ _[Any extra context, preferences, or observations. Delete this section if not ne
 
 # Part 2: The Branching Workflow
 
-Now that v1.0 is done, you MUST stop working directly on the `main` branch.
+Now that v0.1 is done, you MUST stop working directly on the `main` branch.
 
 ### Step 1: Create a feature branch
 
@@ -95,7 +95,7 @@ git merge feature/name-of-your-feature
 git checkout main
 # Delete the branch and the mess
 git branch -D feature/name-of-your-feature
-# You are now back to stable v1.0! Try again from scratch.
+# You are now back to stable v0.1! Try again from scratch.
 ```
 
 ---

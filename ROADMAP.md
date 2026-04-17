@@ -1,6 +1,6 @@
-# Deep Work F1 — Roadmap (Post-v1.0)
+# Deep Work F1 — Roadmap (Post-v0.1)
 
-> **Purpose of this file**: This file tracks the backlog of ideas, features, and improvements planned for Deep Work F1 after the completion of v1.0. 
+> **Purpose of this file**: This file tracks the backlog of ideas, features, and improvements planned for Deep Work F1 after the completion of v0.1. 
 > 
 > **Workflow Rule**: Pick ONE feature from this list, create a new git branch (`git checkout -b feature/[name]`), and have the AI implement it using the Day 2 prompt template in `PROMPT.md`.
 
@@ -50,7 +50,7 @@ Cosmetic or complex features.
 
 ---
 
-## 🏗️ Completed Features (v1.1+)
+## 🏗️ Completed Features (v0.2+)
 
 *(Move completed features here once merged into `main`)*
 
