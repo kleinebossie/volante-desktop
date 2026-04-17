@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSessionStore } from '../../stores/sessionStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useHistoryStore } from '../../stores/historyStore';
@@ -11,7 +11,11 @@ import { formatMMSS } from '../../utils/formatTime';
 import styles from './SetupScreen.module.css';
 
 export function SetupScreen() {
-  const { createSession, startSession } = useSessionStore();
+  const createSession = useSessionStore((s) => s.createSession);
+  const startSession = useSessionStore((s) => s.startSession);
+  const setupSession = useSessionStore((s) =>
+    s.session && s.session.state === 'setup' ? s.session : null
+  );
   const settings = useSettingsStore(s => s.settings);
   const pastSessions = useHistoryStore(s => s.sessions);
 
@@ -21,6 +25,19 @@ export function SetupScreen() {
   const [strategyNote, setStrategyNote] = useState<string>('');
   const [parcFerme, setParcFerme] = useState<boolean>(settings.parcFermeDefault);
   const [penaltyTriggers, setPenaltyTriggers] = useState<PenaltyTrigger[]>(settings.defaultPenaltyTriggers);
+
+  useEffect(() => {
+    if (!setupSession) {
+      return;
+    }
+
+    setSelectedTrackId(setupSession.selectedTrackId);
+    setDurationMin(Math.max(5, Math.round(setupSession.targetDurationSec / 60)));
+    setSeasonYear(setupSession.seasonYear);
+    setStrategyNote(setupSession.strategyNote);
+    setParcFerme(setupSession.parcFermeEnabled);
+    setPenaltyTriggers(setupSession.enabledPenaltyTriggers);
+  }, [setupSession]);
 
   const togglePenalty = (trigger: PenaltyTrigger) => {
     setPenaltyTriggers(prev => 
