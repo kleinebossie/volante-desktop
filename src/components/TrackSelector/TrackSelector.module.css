@@ -1,0 +1,82 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: var(--space-2);
+}
+
+.scrollArea {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding: var(--space-2);
+  padding-bottom: var(--space-4); /* Space for scrollbar */
+  scrollbar-width: thin;
+}
+
+.trackCard {
+  flex: 0 0 160px;
+  height: 100px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  text-align: left;
+  outline: none;
+}
+
+.trackCard:hover {
+  border-color: var(--color-border-active);
+  background-color: var(--color-bg-hover);
+}
+
+.trackCard.selected {
+  border-color: var(--track-accent);
+  box-shadow: 0 0 12px var(--track-accent);
+  background-color: var(--color-bg-tertiary);
+}
+
+.flag {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.country {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.name {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
