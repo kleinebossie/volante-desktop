@@ -8,7 +8,7 @@
 
 - **Date**: 2026-04-20
 - **By**: GitHub Copilot (GPT-5.3-Codex)
-- **Session summary**: Fixed Favorite Tracks selector in Settings to show all tracks without an inner scrollbar; scrolling is now handled only by the main settings modal.
+- **Session summary**: Updated settings numeric inputs to allow free typing, show red inline invalid warnings, and only clamp to min/max after input blur.
 
 ---
 
@@ -16,7 +16,7 @@
 
 - **Goal**: Reach zero critical/medium bugs to cut the v1.0 release.
 - **Current Branch**: `main` (Stable baseline)
-- **Active Bug/Task**: _None currently (BUG-001, BUG-002, and BUG-003 resolved)_
+- **Active Bug/Task**: _None currently (BUG-001, BUG-002, BUG-003, and BUG-004 resolved)_
 
 ---
 
@@ -37,11 +37,12 @@
 
 ## 3. Resolved Bugs (v0)
 
-| ID      | Severity  | Description                                                                                                                                                  | Fix Summary                                                                                                                                                                                                                                                             | Resolved Date |
-| ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| BUG-001 | 🟡 Medium | Settings changes (e.g., default duration, Parc Fermé) were saved in settings modal but Setup screen often kept stale values (favorites updated immediately). | Updated `SetupScreen` hydration logic to resync each setup default field from `settingsStore` whenever that specific setting changes (while no setup session exists), instead of one-time hydration. This keeps Setup UI immediately in sync with settings changes.     | 2026-04-20    |
-| BUG-002 | 🟢 Low    | In Settings, the "Default season ruleset" dropdown rendered with a white background and very light text on Linux, making the selected value hard to read.    | Updated `SettingsScreen.module.css` select styling to force consistent custom rendering (`appearance` overrides), match input background/text colors, and apply explicit option colors so the dropdown aligns visually with session duration and idle threshold fields. | 2026-04-20    |
-| BUG-003 | 🟢 Low    | In Settings, the Favorite Tracks list had its own inner scrollbar, so not all tracks were visible at a glance inside the section.                            | Updated `SettingsScreen.module.css` to remove the Favorite Tracks section-level `max-height` and `overflow-y` rules, so all tracks render in full and only the main settings modal handles scrolling.                                                                   | 2026-04-20    |
+| ID      | Severity  | Description                                                                                                                                                    | Fix Summary                                                                                                                                                                                                                                                                              | Resolved Date |
+| ------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| BUG-001 | 🟡 Medium | Settings changes (e.g., default duration, Parc Fermé) were saved in settings modal but Setup screen often kept stale values (favorites updated immediately).   | Updated `SetupScreen` hydration logic to resync each setup default field from `settingsStore` whenever that specific setting changes (while no setup session exists), instead of one-time hydration. This keeps Setup UI immediately in sync with settings changes.                      | 2026-04-20    |
+| BUG-002 | 🟢 Low    | In Settings, the "Default season ruleset" dropdown rendered with a white background and very light text on Linux, making the selected value hard to read.      | Updated `SettingsScreen.module.css` select styling to force consistent custom rendering (`appearance` overrides), match input background/text colors, and apply explicit option colors so the dropdown aligns visually with session duration and idle threshold fields.                  | 2026-04-20    |
+| BUG-003 | 🟢 Low    | In Settings, the Favorite Tracks list had its own inner scrollbar, so not all tracks were visible at a glance inside the section.                              | Updated `SettingsScreen.module.css` to remove the Favorite Tracks section-level `max-height` and `overflow-y` rules, so all tracks render in full and only the main settings modal handles scrolling.                                                                                    | 2026-04-20    |
+| BUG-004 | 🟡 Medium | In Settings, clearing default session duration or idle threshold immediately snapped to a minimum value, preventing users from replacing the number naturally. | Updated `SettingsScreen.tsx` number inputs to keep local draft text during typing, show red warnings when a typed value is invalid, and only on blur clamp out-of-range values to bounds (duration: 1-600, idle threshold: 10-3600) while restoring last saved values for empty entries. | 2026-04-20    |
 
 ---
 
@@ -96,6 +97,22 @@
 - **2026-04-20** — Fixed BUG-003 (Favorite tracks inner scrolling)
   - Traced issue to `src/screens/SettingsScreen/SettingsScreen.module.css`: `.favoriteTracksGrid` used `max-height: 180px` plus `overflow-y: auto`, creating a nested scrollbar inside the settings modal.
   - Implemented focused fix: removed section-level scroll constraints so all favorite track options are visible at once, with scrolling handled only by the main settings modal.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-04-20** — Fixed BUG-004 (Settings numeric input editing)
+  - Traced issue to `src/screens/SettingsScreen/SettingsScreen.tsx`: both number inputs were controlled directly by store values and clamped on every keystroke, so deleting text immediately snapped to minimum values.
+  - Implemented focused fix: introduced local draft string state for both fields so users can clear/type naturally, auto-persisted only valid values within required ranges (1-600 minutes, 10-3600 seconds), and restored previous saved value on blur when input is left empty/invalid.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-04-20** — Follow-up tweak for BUG-004 (Out-of-range snapping)
+  - Updated `src/screens/SettingsScreen/SettingsScreen.tsx` so entered values below minimum now snap to min and values above maximum snap to max for both numeric fields.
+  - Preserved clear-to-edit behavior and empty-input fallback to last saved value on blur.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-04-20** — Follow-up tweak for BUG-004 (Blur-only correction + warnings)
+  - Updated `src/screens/SettingsScreen/SettingsScreen.tsx` to stop clamping while typing so users can freely edit textbox values.
+  - Added inline red validation warnings for invalid values in both numeric settings fields via `src/screens/SettingsScreen/SettingsScreen.module.css`.
+  - Kept correction behavior on blur only: below-min values snap to min, above-max values snap to max, and empty entries restore last saved values.
   - Verified stability with `npm run build` (successful).
 
 ---

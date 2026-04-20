@@ -121,6 +121,13 @@
   border-color: var(--color-border-active);
 }
 
+.validationError {
+  margin-top: var(--space-1);
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .toggleGroup {
   display: flex;
   flex-wrap: wrap;
