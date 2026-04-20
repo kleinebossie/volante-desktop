@@ -29,27 +29,42 @@ export function SetupScreen() {
   const [parcFerme, setParcFerme] = useState<boolean>(settings.parcFermeDefault);
   const [penaltyTriggers, setPenaltyTriggers] = useState<PenaltyTrigger[]>(settings.defaultPenaltyTriggers);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [defaultsHydrated, setDefaultsHydrated] = useState(false);
 
   useEffect(() => {
-    if (!settingsLoaded || setupSession || defaultsHydrated) {
+    if (!settingsLoaded || setupSession) {
       return;
     }
 
     setDurationMin(settings.defaultDurationMin);
-    setSeasonYear(settings.defaultSeasonYear);
-    setParcFerme(settings.parcFermeDefault);
-    setPenaltyTriggers(settings.defaultPenaltyTriggers);
-    setDefaultsHydrated(true);
   }, [
-    defaultsHydrated,
     settings.defaultDurationMin,
-    settings.defaultPenaltyTriggers,
-    settings.defaultSeasonYear,
-    settings.parcFermeDefault,
     settingsLoaded,
     setupSession,
   ]);
+
+  useEffect(() => {
+    if (!settingsLoaded || setupSession) {
+      return;
+    }
+
+    setSeasonYear(settings.defaultSeasonYear);
+  }, [settings.defaultSeasonYear, settingsLoaded, setupSession]);
+
+  useEffect(() => {
+    if (!settingsLoaded || setupSession) {
+      return;
+    }
+
+    setParcFerme(settings.parcFermeDefault);
+  }, [settings.parcFermeDefault, settingsLoaded, setupSession]);
+
+  useEffect(() => {
+    if (!settingsLoaded || setupSession) {
+      return;
+    }
+
+    setPenaltyTriggers(settings.defaultPenaltyTriggers);
+  }, [settings.defaultPenaltyTriggers, settingsLoaded, setupSession]);
 
   useEffect(() => {
     if (!setupSession) {
@@ -62,7 +77,6 @@ export function SetupScreen() {
     setStrategyNote(setupSession.strategyNote);
     setParcFerme(setupSession.parcFermeEnabled);
     setPenaltyTriggers(setupSession.enabledPenaltyTriggers);
-    setDefaultsHydrated(true);
   }, [setupSession]);
 
   const togglePenalty = (trigger: PenaltyTrigger) => {

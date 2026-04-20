@@ -6,9 +6,9 @@
 
 ## Last Updated
 
-- **Date**: _Not yet started_
-- **By**: _N/A_
-- **Session summary**: _N/A_
+- **Date**: 2026-04-20
+- **By**: GitHub Copilot (GPT-5.3-Codex)
+- **Session summary**: Fixed setup defaults not updating after settings changes by syncing SetupScreen local form state with settings store changes.
 
 ---
 
@@ -16,7 +16,7 @@
 
 - **Goal**: Reach zero critical/medium bugs to cut the v1.0 release.
 - **Current Branch**: `main` (Stable baseline)
-- **Active Bug/Task**: _None currently_
+- **Active Bug/Task**: _None currently (BUG-001 resolved)_
 
 ---
 
@@ -29,17 +29,17 @@
   - Severity: 🔴 Critical (Crashes/blocks usage) · 🟡 Medium (Feature broken) · 🟢 Low (Cosmetic)
 -->
 
-| ID | Severity | Description | Likely Files | Status |
-|----|----------|-------------|--------------|--------|
-| _—_ | _—_ | _List bugs here as you find them during testing_ | _—_ | _—_ |
+| ID  | Severity | Description                                      | Likely Files | Status |
+| --- | -------- | ------------------------------------------------ | ------------ | ------ |
+| _—_ | _—_      | _List bugs here as you find them during testing_ | _—_          | _—_    |
 
 ---
 
 ## 3. Resolved Bugs (v0)
 
-| ID | Severity | Description | Fix Summary | Resolved Date |
-|----|----------|-------------|-------------|---------------|
-| _—_ | _—_ | _—_ | _—_ | _—_ |
+| ID      | Severity  | Description                                                                                                                                                  | Fix Summary                                                                                                                                                                                                                                                         | Resolved Date |
+| ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| BUG-001 | 🟡 Medium | Settings changes (e.g., default duration, Parc Fermé) were saved in settings modal but Setup screen often kept stale values (favorites updated immediately). | Updated `SetupScreen` hydration logic to resync each setup default field from `settingsStore` whenever that specific setting changes (while no setup session exists), instead of one-time hydration. This keeps Setup UI immediately in sync with settings changes. | 2026-04-20    |
 
 ---
 
@@ -48,8 +48,8 @@
 <!-- If the AI took a shortcut that makes the app fragile, log it here so it gets fixed before release -->
 
 | Item | What Was Done | What Should Be Done | Priority |
-|------|--------------|---------------------|----------|
-| _—_ | _—_ | _—_ | _—_ |
+| ---- | ------------- | ------------------- | -------- |
+| _—_  | _—_           | _—_                 | _—_      |
 
 ---
 
@@ -57,13 +57,13 @@
 
 <!-- Quick reference map for the agent -->
 
-| Directory/File | Purpose |
-|----------------|---------|
-| `ARCHITECTURE.md` | Core architectural rules — DO NOT DEVIATE from these patterns. |
-| `src/stores/` | Zustand state stores (`sessionStore`, `settingsStore`, `historyStore`). |
-| `src/engine/` | Core pure-logic engine (`timer`, `regulations`, `penalties`). |
-| `src/components/` | Reusable UI components. |
-| `src/screens/` | Main views (`Setup`, `Race`, `Summary`). |
+| Directory/File    | Purpose                                                                 |
+| ----------------- | ----------------------------------------------------------------------- |
+| `ARCHITECTURE.md` | Core architectural rules — DO NOT DEVIATE from these patterns.          |
+| `src/stores/`     | Zustand state stores (`sessionStore`, `settingsStore`, `historyStore`). |
+| `src/engine/`     | Core pure-logic engine (`timer`, `regulations`, `penalties`).           |
+| `src/components/` | Reusable UI components.                                                 |
+| `src/screens/`    | Main views (`Setup`, `Race`, `Summary`).                                |
 
 ---
 
@@ -81,7 +81,10 @@
 
 <!-- Add entries chronologically -->
 
-_No stabilization sessions yet._
+- **2026-04-20** — Fixed BUG-001 (Settings sync inconsistency)
+  - Traced issue to `src/screens/SetupScreen/SetupScreen.tsx`: local setup form state was only hydrated once from settings due to a one-time guard.
+  - Implemented targeted fix: split hydration into per-field effects (`duration`, `season`, `parc ferme`, `penalty triggers`) that react to settings changes immediately when no setup session is active.
+  - Verified behavior via test/build commands in this session.
 
 ---
 
