@@ -1,9 +1,18 @@
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SEASONS } from '../../data/seasons';
 import { TRACKS } from '../../data/tracks';
 import { useSettingsStore } from '../../stores/settingsStore';
 import type { PenaltyTrigger } from '../../types/regulations';
 import styles from './SettingsScreen.module.css';
+
+const DURATION_MIN = 1;
+const DURATION_MAX = 600;
+const IDLE_THRESHOLD_MIN = 10;
+const IDLE_THRESHOLD_MAX = 3600;
+
+const clampValue = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
 
 interface SettingsScreenProps {
   isOpen: boolean;
@@ -13,6 +22,84 @@ interface SettingsScreenProps {
 export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
   const settings = useSettingsStore((s) => s.settings);
   const updateSettings = useSettingsStore((s) => s.updateSettings);
+  const [durationInput, setDurationInput] = useState(() =>
+    String(settings.defaultDurationMin)
+  );
+  const [idleThresholdInput, setIdleThresholdInput] = useState(() =>
+    String(settings.idleThresholdSec)
+  );
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setDurationInput(String(settings.defaultDurationMin));
+    setIdleThresholdInput(String(settings.idleThresholdSec));
+  }, [isOpen, settings.defaultDurationMin, settings.idleThresholdSec]);
+
+  const parseInteger = (value: string): number | null => {
+    if (!/^\d+$/.test(value)) {
+      return null;
+    }
+
+    const parsed = Number(value);
+    return Number.isInteger(parsed) ? parsed : null;
+  };
+
+  const isDurationInvalid =
+    durationInput !== '' &&
+    (() => {
+      const parsed = parseInteger(durationInput);
+      return parsed === null || parsed < DURATION_MIN || parsed > DURATION_MAX;
+    })();
+
+  const isIdleThresholdInvalid =
+    idleThresholdInput !== '' &&
+    (() => {
+      const parsed = parseInteger(idleThresholdInput);
+      return (
+        parsed === null ||
+        parsed < IDLE_THRESHOLD_MIN ||
+        parsed > IDLE_THRESHOLD_MAX
+      );
+    })();
+
+  const saveDuration = (value: string): number | null => {
+    const parsed = parseInteger(value);
+
+    if (parsed === null) {
+      return null;
+    }
+
+    const clamped = clampValue(parsed, DURATION_MIN, DURATION_MAX);
+
+    if (clamped !== settings.defaultDurationMin) {
+      void updateSettings({ defaultDurationMin: clamped });
+    }
+
+    return clamped;
+  };
+
+  const saveIdleThreshold = (value: string): number | null => {
+    const parsed = parseInteger(value);
+
+    if (parsed === null) {
+      return null;
+    }
+
+    const clamped = clampValue(
+      parsed,
+      IDLE_THRESHOLD_MIN,
+      IDLE_THRESHOLD_MAX
+    );
+
+    if (clamped !== settings.idleThresholdSec) {
+      void updateSettings({ idleThresholdSec: clamped });
+    }
+
+    return clamped;
+  };
 
   const togglePenaltyTrigger = (trigger: PenaltyTrigger) => {
     const nextTriggers = settings.defaultPenaltyTriggers.includes(trigger)
@@ -70,19 +157,38 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
                   id="settings-duration"
                   className={styles.input}
                   type="number"
-                  min={5}
-                  max={120}
-                  step={5}
-                  value={settings.defaultDurationMin}
+                  min={DURATION_MIN}
+                  max={DURATION_MAX}
+                  step={1}
+                  value={durationInput}
                   onChange={(event) => {
-                    const rawValue = Number(event.target.value);
-                    const boundedValue = Math.min(
-                      120,
-                      Math.max(5, Number.isFinite(rawValue) ? rawValue : 5)
-                    );
-                    void updateSettings({ defaultDurationMin: boundedValue });
+                    setDurationInput(event.target.value);
                   }}
+                  onBlur={() => {
+                    if (durationInput === '') {
+                      setDurationInput(String(settings.defaultDurationMin));
+                      return;
+                    }
+
+                    const clamped = saveDuration(durationInput);
+
+                    if (clamped === null) {
+                      if (settings.defaultDurationMin !== DURATION_MIN) {
+                        void updateSettings({ defaultDurationMin: DURATION_MIN });
+                      }
+                      setDurationInput(String(DURATION_MIN));
+                      return;
+                    }
+
+                    setDurationInput(String(clamped));
+                  }}
+                  aria-invalid={isDurationInvalid}
                 />
+                {isDurationInvalid ? (
+                  <p className={styles.validationError} role="alert">
+                    Enter a number between {DURATION_MIN} and {DURATION_MAX}.
+                  </p>
+                ) : null}
 
                 <label className={styles.fieldLabel} htmlFor="settings-season">
                   Default season ruleset
@@ -141,19 +247,38 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
                   id="settings-idle-threshold"
                   className={styles.input}
                   type="number"
-                  min={30}
-                  max={600}
-                  step={5}
-                  value={settings.idleThresholdSec}
+                  min={IDLE_THRESHOLD_MIN}
+                  max={IDLE_THRESHOLD_MAX}
+                  step={1}
+                  value={idleThresholdInput}
                   onChange={(event) => {
-                    const rawValue = Number(event.target.value);
-                    const boundedValue = Math.min(
-                      600,
-                      Math.max(30, Number.isFinite(rawValue) ? rawValue : 30)
-                    );
-                    void updateSettings({ idleThresholdSec: boundedValue });
+                    setIdleThresholdInput(event.target.value);
                   }}
+                  onBlur={() => {
+                    if (idleThresholdInput === '') {
+                      setIdleThresholdInput(String(settings.idleThresholdSec));
+                      return;
+                    }
+
+                    const clamped = saveIdleThreshold(idleThresholdInput);
+
+                    if (clamped === null) {
+                      if (settings.idleThresholdSec !== IDLE_THRESHOLD_MIN) {
+                        void updateSettings({ idleThresholdSec: IDLE_THRESHOLD_MIN });
+                      }
+                      setIdleThresholdInput(String(IDLE_THRESHOLD_MIN));
+                      return;
+                    }
+
+                    setIdleThresholdInput(String(clamped));
+                  }}
+                  aria-invalid={isIdleThresholdInvalid}
                 />
+                {isIdleThresholdInvalid ? (
+                  <p className={styles.validationError} role="alert">
+                    Enter a number between {IDLE_THRESHOLD_MIN} and {IDLE_THRESHOLD_MAX}.
+                  </p>
+                ) : null}
               </section>
 
               <section className={styles.section}>
