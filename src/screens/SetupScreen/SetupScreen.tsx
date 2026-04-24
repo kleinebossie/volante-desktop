@@ -117,6 +117,7 @@ export function SetupScreen() {
         <TrackSelector 
           selectedTrackId={selectedTrackId}
           onSelectTrack={setSelectedTrackId}
+          hideScrollbar={isSettingsOpen}
         />
 
         <div className={styles.row}>
