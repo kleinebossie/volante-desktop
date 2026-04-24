@@ -6,9 +6,9 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-20
+- **Date**: 2026-04-24
 - **By**: GitHub Copilot (GPT-5.3-Codex)
-- **Session summary**: Updated settings numeric inputs to allow free typing, show red inline invalid warnings, and only clamp to min/max after input blur.
+- **Session summary**: Refactored all app checkboxes into consistent pill-shaped toggles while preserving existing behavior, layout cleanliness, and the current red/dark visual theme.
 
 ---
 
@@ -16,7 +16,7 @@
 
 - **Goal**: Reach zero critical/medium bugs to cut the v1.0 release.
 - **Current Branch**: `main` (Stable baseline)
-- **Active Bug/Task**: _None currently (BUG-001, BUG-002, BUG-003, and BUG-004 resolved)_
+- **Active Bug/Task**: _None currently (BUG-001 through BUG-007 resolved)_
 
 ---
 
@@ -37,12 +37,15 @@
 
 ## 3. Resolved Bugs (v0)
 
-| ID      | Severity  | Description                                                                                                                                                    | Fix Summary                                                                                                                                                                                                                                                                              | Resolved Date |
-| ------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| BUG-001 | 🟡 Medium | Settings changes (e.g., default duration, Parc Fermé) were saved in settings modal but Setup screen often kept stale values (favorites updated immediately).   | Updated `SetupScreen` hydration logic to resync each setup default field from `settingsStore` whenever that specific setting changes (while no setup session exists), instead of one-time hydration. This keeps Setup UI immediately in sync with settings changes.                      | 2026-04-20    |
-| BUG-002 | 🟢 Low    | In Settings, the "Default season ruleset" dropdown rendered with a white background and very light text on Linux, making the selected value hard to read.      | Updated `SettingsScreen.module.css` select styling to force consistent custom rendering (`appearance` overrides), match input background/text colors, and apply explicit option colors so the dropdown aligns visually with session duration and idle threshold fields.                  | 2026-04-20    |
-| BUG-003 | 🟢 Low    | In Settings, the Favorite Tracks list had its own inner scrollbar, so not all tracks were visible at a glance inside the section.                              | Updated `SettingsScreen.module.css` to remove the Favorite Tracks section-level `max-height` and `overflow-y` rules, so all tracks render in full and only the main settings modal handles scrolling.                                                                                    | 2026-04-20    |
-| BUG-004 | 🟡 Medium | In Settings, clearing default session duration or idle threshold immediately snapped to a minimum value, preventing users from replacing the number naturally. | Updated `SettingsScreen.tsx` number inputs to keep local draft text during typing, show red warnings when a typed value is invalid, and only on blur clamp out-of-range values to bounds (duration: 1-600, idle threshold: 10-3600) while restoring last saved values for empty entries. | 2026-04-20    |
+| ID      | Severity  | Description                                                                                                                                                       | Fix Summary                                                                                                                                                                                                                                                                              | Resolved Date |
+| ------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| BUG-001 | 🟡 Medium | Settings changes (e.g., default duration, Parc Fermé) were saved in settings modal but Setup screen often kept stale values (favorites updated immediately).      | Updated `SetupScreen` hydration logic to resync each setup default field from `settingsStore` whenever that specific setting changes (while no setup session exists), instead of one-time hydration. This keeps Setup UI immediately in sync with settings changes.                      | 2026-04-20    |
+| BUG-002 | 🟢 Low    | In Settings, the "Default season ruleset" dropdown rendered with a white background and very light text on Linux, making the selected value hard to read.         | Updated `SettingsScreen.module.css` select styling to force consistent custom rendering (`appearance` overrides), match input background/text colors, and apply explicit option colors so the dropdown aligns visually with session duration and idle threshold fields.                  | 2026-04-20    |
+| BUG-003 | 🟢 Low    | In Settings, the Favorite Tracks list had its own inner scrollbar, so not all tracks were visible at a glance inside the section.                                 | Updated `SettingsScreen.module.css` to remove the Favorite Tracks section-level `max-height` and `overflow-y` rules, so all tracks render in full and only the main settings modal handles scrolling.                                                                                    | 2026-04-20    |
+| BUG-004 | 🟡 Medium | In Settings, clearing default session duration or idle threshold immediately snapped to a minimum value, preventing users from replacing the number naturally.    | Updated `SettingsScreen.tsx` number inputs to keep local draft text during typing, show red warnings when a typed value is invalid, and only on blur clamp out-of-range values to bounds (duration: 1-600, idle threshold: 10-3600) while restoring last saved values for empty entries. | 2026-04-20    |
+| BUG-005 | 🟢 Low    | In Setup screen penalty trigger checkboxes (Pause/App Unfocus/Idle), the checked glyph looked visually off-center and rough on Linux when toggled on.             | Updated `SetupScreen.module.css` checkbox styling to use a custom centered checkmark in checked state, with smoother activated visuals (red fill + subtle glow) while preserving existing behavior and logic.                                                                            | 2026-04-24    |
+| BUG-006 | 🟢 Low    | Checkbox styling was inconsistent across screens (Setup used custom polished checked style, while Settings and Strategy Note still used default browser styling). | Updated `SettingsScreen.module.css` and `StrategyNote.module.css` checkbox styles to match the approved Setup style exactly (custom centered checkmark, active red fill, subtle glow, and focus-visible ring), creating consistent checkbox visuals across the entire app.               | 2026-04-24    |
+| BUG-007 | 🟢 Low    | All checkbox controls should be pill-shaped toggles to match the app style and maintain a clean, consistent layout.                                               | Updated checkbox styling in `SetupScreen.module.css`, `SettingsScreen.module.css`, and `StrategyNote.module.css` from square checkboxes to pill toggles (track + sliding knob), keeping the existing color palette (dark inactive, red active, blue focus) and preserving all logic.     | 2026-04-24    |
 
 ---
 
@@ -113,6 +116,21 @@
   - Updated `src/screens/SettingsScreen/SettingsScreen.tsx` to stop clamping while typing so users can freely edit textbox values.
   - Added inline red validation warnings for invalid values in both numeric settings fields via `src/screens/SettingsScreen/SettingsScreen.module.css`.
   - Kept correction behavior on blur only: below-min values snap to min, above-max values snap to max, and empty entries restore last saved values.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-04-24** — Fixed BUG-005 (Penalty trigger checkbox checked-state visuals)
+  - Traced issue to `src/screens/SetupScreen/SetupScreen.module.css`: native checkbox checked glyph rendering on Linux appeared visually off-center.
+  - Implemented focused CSS-only fix: custom centered checkmark for checked state, plus subtle active red glow, with no logic/state changes.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-04-24** — Fixed BUG-006 (Global checkbox style consistency)
+  - Traced inconsistency to `src/screens/SettingsScreen/SettingsScreen.module.css` and `src/components/StrategyNote/StrategyNote.module.css`: these checkboxes were still using default browser rendering.
+  - Implemented focused CSS-only fix: applied the exact approved checkbox style from Setup screen to all remaining checkbox classes for full UI consistency.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-04-24** — Fixed BUG-007 (Convert all checkboxes to pill toggles)
+  - Traced all checkbox usages to `src/screens/SetupScreen/SetupScreen.tsx`, `src/screens/SettingsScreen/SettingsScreen.tsx`, and `src/components/StrategyNote/StrategyNote.tsx`, all bound to `.checkbox` styles.
+  - Implemented focused CSS-only fix in each corresponding module file: replaced square checkbox visuals with pill-shaped toggle tracks and sliding knobs, while preserving the existing red accent, dark backgrounds, blue focus outline, and all interaction logic.
   - Verified stability with `npm run build` (successful).
 
 ---
