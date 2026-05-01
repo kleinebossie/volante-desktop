@@ -60,4 +60,42 @@ describe('sessionStore edge cases', () => {
     const afterInvalidResume = useSessionStore.getState().session;
     expect(afterInvalidResume?.state).toBe('completed');
   });
+
+  it('allows updating strategy note during running session when parc ferme is off', () => {
+    const store = useSessionStore.getState();
+
+    store.createSession({
+      trackId: 'silverstone',
+      seasonYear: 2026,
+      durationSec: 1500,
+      strategyNote: 'Initial plan',
+      parcFerme: false,
+      penaltyTriggers: ['pause'],
+    });
+    store.startSession();
+
+    store.updateStrategyNote('Initial plan\nSecond point');
+
+    const session = useSessionStore.getState().session;
+    expect(session?.strategyNote).toBe('Initial plan\nSecond point');
+  });
+
+  it('blocks updating strategy note during running session when parc ferme is on', () => {
+    const store = useSessionStore.getState();
+
+    store.createSession({
+      trackId: 'silverstone',
+      seasonYear: 2026,
+      durationSec: 1500,
+      strategyNote: 'Locked plan',
+      parcFerme: true,
+      penaltyTriggers: ['pause'],
+    });
+    store.startSession();
+
+    store.updateStrategyNote('Locked plan\nAttempted change');
+
+    const session = useSessionStore.getState().session;
+    expect(session?.strategyNote).toBe('Locked plan');
+  });
 });

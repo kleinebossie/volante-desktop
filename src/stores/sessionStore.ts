@@ -85,6 +85,9 @@ interface SessionStore {
   /** Discard the session — go back to a blank slate (null). */
   clearSession: () => void;
 
+  /** Update strategy note during race when parc ferme is disabled. */
+  updateStrategyNote: (note: string) => void;
+
   // ------------------------------------------------------------------
   // Timer
   // ------------------------------------------------------------------
@@ -289,6 +292,25 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // --------------------------------------------------
   clearSession() {
     set({ session: null });
+  },
+
+  // --------------------------------------------------
+  // updateStrategyNote
+  // --------------------------------------------------
+  updateStrategyNote(note: string) {
+    const { session } = get();
+    if (!session) return;
+
+    const canEditInCurrentState = session.state === 'running' || session.state === 'paused';
+    if (!canEditInCurrentState) return;
+    if (session.parcFermeEnabled) return;
+
+    set({
+      session: {
+        ...session,
+        strategyNote: note,
+      },
+    });
   },
 
   // --------------------------------------------------

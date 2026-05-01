@@ -8,7 +8,7 @@
 
 - **Date**: 2026-04-24
 - **By**: GitHub Copilot (GPT-5.3-Codex)
-- **Session summary**: Replaced TrackSelector native scrollbar with a custom cross-platform scrollbar to fix Ubuntu/Linux rendering inconsistencies while preserving instant hide behavior when opening Settings.
+- **Session summary**: Expanded in-race strategy controls so Parc Ferme OFF allows add, edit, and remove bullet notes, while Parc Ferme ON keeps the strategy locked.
 
 ---
 
@@ -16,7 +16,7 @@
 
 - **Goal**: Reach zero critical/medium bugs to cut the v1.0 release.
 - **Current Branch**: `main` (Stable baseline)
-- **Active Bug/Task**: _None currently (BUG-001 through BUG-007 resolved)_
+- **Active Bug/Task**: _None currently (BUG-001 through BUG-012 resolved)_
 
 ---
 
@@ -48,6 +48,9 @@
 | BUG-007 | 🟢 Low    | All checkbox controls should be pill-shaped toggles to match the app style and maintain a clean, consistent layout.                                               | Updated checkbox styling in `SetupScreen.module.css`, `SettingsScreen.module.css`, and `StrategyNote.module.css` from square checkboxes to pill toggles (track + sliding knob), keeping the existing color palette (dark inactive, red active, blue focus) and preserving all logic.                 | 2026-04-24    |
 | BUG-008 | 🟢 Low    | Track selector scrollbar thumb looked unclear (black/outlined) and could remain visible briefly over the Settings modal after interacting with it.                | Updated `TrackSelector.module.css` with high-contrast custom scrollbar track/thumb styling and added an immediate hidden state. Wired `SetupScreen.tsx` to pass settings-open state into `TrackSelector.tsx`, which now disables horizontal overflow and hides the scrollbar while Settings is open. | 2026-04-24    |
 | BUG-009 | 🟢 Low    | On Ubuntu/Linux, the TrackSelector scrollbar still rendered using native themed colors despite CSS styling, so the thumb remained hard to distinguish.            | Replaced native scrollbar styling in `TrackSelector` with a custom in-app scrollbar (track + draggable thumb), hid native scrollbars in all engines for that component, and kept the existing immediate-hide behavior when Settings opens to ensure consistent rendering across systems.             | 2026-04-24    |
+| BUG-010 | 🟡 Medium | Strategy Note in Setup only supported a single plain text entry, so users could not build a session plan as multiple bullet points.                               | Updated `StrategyNote.tsx` to use Enter-to-commit note capture and display committed items as bullets under the input. Stored notes in the existing `strategyNote` string as newline-separated entries, then updated Race and Summary screens to render those entries as bullet lists consistently.  | 2026-04-24    |
+| BUG-011 | 🟡 Medium | Parc Ferme setting had no practical effect during race because strategy notes could not be changed in either mode.                                                | Added `updateStrategyNote` in `sessionStore` with guards to allow edits only while running/paused and only when Parc Ferme is disabled. Updated `RaceScreen` to show an Enter-to-add strategy input when unlocked and a lock hint when locked, preserving existing strategy bullet rendering.        | 2026-04-24    |
+| BUG-012 | 🟡 Medium | During race with Parc Ferme OFF, users could add strategy bullets but could not edit or remove existing ones, so strategy control was still incomplete.           | Updated `RaceScreen` to add tiny per-bullet Edit and Remove controls when unlocked, plus inline edit mode (Save/Cancel, Enter to save, Escape to cancel). Controls remain hidden/disabled under Parc Ferme ON, preserving lock behavior.                                                             | 2026-04-24    |
 
 ---
 
@@ -146,6 +149,24 @@
   - Implemented focused cross-platform fix in `src/components/TrackSelector/TrackSelector.tsx` and `src/components/TrackSelector/TrackSelector.module.css`: hide native scrollbar in this component and render a deterministic custom scrollbar with a high-contrast track and draggable thumb.
   - Preserved the BUG-008 behavior by continuing to hide the scrollbar immediately whenever Settings is open.
   - Verified stability with `npm run build` (successful).
+
+- **2026-04-24** — Fixed BUG-010 (Strategy Note multi-bullet support)
+  - Traced issue to `src/components/StrategyNote/StrategyNote.tsx`: input was bound directly to a single string value, with no way to commit and display multiple note items.
+  - Implemented focused fix: introduced a local draft input and Enter-to-commit behavior that appends each note as a newline-separated item in the existing `strategyNote` field, then renders committed notes as bullet points below the input.
+  - Updated `src/screens/RaceScreen/RaceScreen.tsx` and `src/screens/SummaryScreen/SummaryScreen.tsx` to display newline-separated strategy notes as bullet lists for consistent session readouts.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-04-24** — Fixed BUG-011 (Parc Ferme strategy edit behavior)
+  - Traced issue to `src/screens/RaceScreen/RaceScreen.tsx` and `src/stores/sessionStore.ts`: strategy notes were display-only during race, so Parc Ferme ON/OFF produced no behavior difference.
+  - Implemented focused fix in store and UI: added `updateStrategyNote` action with runtime guards (allowed only in running/paused and only when Parc Ferme is OFF), plus an Enter-to-add race strategy input shown only when unlocked.
+  - Added regression coverage in `src/stores/sessionStore.test.ts` for both allowed (Parc Ferme OFF) and blocked (Parc Ferme ON) updates.
+  - Verified stability with `npm run test -- src/stores/sessionStore.test.ts` and `npm run build` (successful).
+
+- **2026-04-24** — Fixed BUG-012 (In-race strategy edit/remove controls)
+  - Traced limitation in `src/screens/RaceScreen/RaceScreen.tsx`: race strategy supported add-only behavior and did not allow modifying previously entered bullets while unlocked.
+  - Implemented focused UI fix: each strategy bullet now shows tiny Edit and Remove buttons when Parc Ferme is OFF, with inline edit mode and keyboard shortcuts (Enter save, Escape cancel).
+  - Added guarded note-list update paths that continue to rely on `sessionStore.updateStrategyNote`, so Parc Ferme ON still blocks mutation.
+  - Verified stability with `npm run test -- src/stores/sessionStore.test.ts` and `npm run build` (successful).
 
 ---
 

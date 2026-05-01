@@ -161,8 +161,128 @@
 }
 
 .strategy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
   font-size: 14px;
   color: var(--color-text-secondary);
+}
+
+.strategyLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+}
+
+.strategyList {
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--color-text-primary);
+}
+
+.strategyItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  line-height: 1.35;
+}
+
+.strategyItemText {
+  color: var(--color-text-primary);
+}
+
+.strategyItemActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: var(--space-2);
+}
+
+.noteActionButton {
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 7px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.noteActionButton:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-blue);
+}
+
+.noteRemoveButton {
+  padding: 3px 6px;
+}
+
+.noteRemoveButton:hover {
+  border-color: var(--color-accent-red);
+  color: var(--color-accent-red);
+}
+
+.strategyEditRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.strategyEditInput {
+  min-width: 180px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  font-size: 12px;
+  padding: 4px 8px;
+  outline: none;
+}
+
+.strategyEditInput:focus {
+  border-color: var(--color-accent-blue);
+}
+
+.strategyEmpty {
+  color: var(--color-text-secondary);
+}
+
+.strategyInputRow {
+  width: min(420px, 100%);
+}
+
+.strategyInput {
+  width: 100%;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.strategyInput:focus {
+  border-color: var(--color-accent-blue);
+}
+
+.strategyInput::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.strategyLockHint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
 }
 
 .abandonButton {

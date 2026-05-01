@@ -181,6 +181,17 @@ export function SummaryScreen() {
     return items;
   }, [finalizedSession, ruleset]);
 
+  const strategyNotes = useMemo(() => {
+    if (!finalizedSession) {
+      return [];
+    }
+
+    return finalizedSession.strategyNote
+      .split('\n')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }, [finalizedSession]);
+
   const sessionRows = finalizedSession ? [
     {
       label: 'Duration',
@@ -295,7 +306,17 @@ export function SummaryScreen() {
 
       <section className={styles.strategyPanel}>
         <h2 className={styles.panelTitle}>Strategy</h2>
-        <p className={styles.strategyText}>{finalizedSession.strategyNote || 'No strategy note was set.'}</p>
+        {strategyNotes.length > 0 ? (
+          <ul className={styles.strategyList}>
+            {strategyNotes.map((item, index) => (
+              <li key={`${item}-${index}`} className={styles.strategyItem}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className={styles.strategyText}>No strategy note was set.</p>
+        )}
       </section>
 
       <footer className={styles.actions}>
