@@ -63,7 +63,7 @@ export function RaceScreen() {
   const lapInfo = calculateLapInfo(
     session.effectiveProgressSec,
     session.targetDurationSec,
-    track.lapTimeFactor
+    track.lapTimeSec
   );
   const overallProgress = calculateOverallProgress(
     session.effectiveProgressSec,
@@ -247,6 +247,8 @@ export function RaceScreen() {
           pathD={track.svgPathD}
           lapProgress={lapInfo.lapProgress}
           accentColor={track.accentColor}
+          startOffset={track.startOffset}
+          reversed={track.reversed}
         />
 
         <AnimatePresence>
