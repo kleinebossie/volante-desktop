@@ -6,9 +6,9 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-24
-- **By**: GitHub Copilot (GPT-5.3-Codex)
-- **Session summary**: Expanded in-race strategy controls so Parc Ferme OFF allows add, edit, and remove bullet notes, while Parc Ferme ON keeps the strategy locked.
+- **Date**: 2026-05-01
+- **By**: Antigravity (Claude Sonnet 4.6 Thinking)
+- **Session summary**: Fixed car direction/start-finish line position (BUG-013) and inaccurate lap counts (BUG-014) by replacing lapTimeFactor with real lap times, adding startOffset/reversed per-track, and applying corrections in TrackRenderer.
 
 ---
 
@@ -16,7 +16,7 @@
 
 - **Goal**: Reach zero critical/medium bugs to cut the v1.0 release.
 - **Current Branch**: `main` (Stable baseline)
-- **Active Bug/Task**: _None currently (BUG-001 through BUG-012 resolved)_
+- **Active Bug/Task**: _None currently (BUG-001 through BUG-014 resolved)_
 
 ---
 
@@ -51,6 +51,8 @@
 | BUG-010 | 🟡 Medium | Strategy Note in Setup only supported a single plain text entry, so users could not build a session plan as multiple bullet points.                               | Updated `StrategyNote.tsx` to use Enter-to-commit note capture and display committed items as bullets under the input. Stored notes in the existing `strategyNote` string as newline-separated entries, then updated Race and Summary screens to render those entries as bullet lists consistently.  | 2026-04-24    |
 | BUG-011 | 🟡 Medium | Parc Ferme setting had no practical effect during race because strategy notes could not be changed in either mode.                                                | Added `updateStrategyNote` in `sessionStore` with guards to allow edits only while running/paused and only when Parc Ferme is disabled. Updated `RaceScreen` to show an Enter-to-add strategy input when unlocked and a lock hint when locked, preserving existing strategy bullet rendering.        | 2026-04-24    |
 | BUG-012 | 🟡 Medium | During race with Parc Ferme OFF, users could add strategy bullets but could not edit or remove existing ones, so strategy control was still incomplete.           | Updated `RaceScreen` to add tiny per-bullet Edit and Remove controls when unlocked, plus inline edit mode (Save/Cancel, Enter to save, Escape to cancel). Controls remain hidden/disabled under Parc Ferme ON, preserving lock behavior.                                                             | 2026-04-24    |
+| BUG-013 | 🟡 Medium | The car start/finish line marker and car direction were incorrect for many tracks — the SVG path origin and drawing direction are arbitrary and don't match real circuits. | Added `startOffset: number` and `reversed: boolean` to the `Track` type and all 24 catalog entries. Updated `TrackRenderer` to apply these corrections to `lapProgress` before computing car position, start/finish line, and progress trail. Added 180° angle correction when reversed.   | 2026-05-01    |
+| BUG-014 | 🟡 Medium | Lap count per session was based on a rough `lapTimeFactor` multiplier (×300 s base), giving unrealistic totals (e.g. ~8 laps on Monaco instead of ~20).              | Replaced `lapTimeFactor` with `lapTimeSec` (real F1 lap time) on the `Track` type. Removed `BASE_LAP_SECONDS` constant. Updated `calculateLapInfo` to use `Math.ceil(targetDurationSec / lapTimeSec)` directly. Updated all callers: `RaceScreen`, `SummaryScreen`.                            | 2026-05-01    |
 
 ---
 
@@ -162,11 +164,20 @@
   - Added regression coverage in `src/stores/sessionStore.test.ts` for both allowed (Parc Ferme OFF) and blocked (Parc Ferme ON) updates.
   - Verified stability with `npm run test -- src/stores/sessionStore.test.ts` and `npm run build` (successful).
 
-- **2026-04-24** — Fixed BUG-012 (In-race strategy edit/remove controls)
-  - Traced limitation in `src/screens/RaceScreen/RaceScreen.tsx`: race strategy supported add-only behavior and did not allow modifying previously entered bullets while unlocked.
-  - Implemented focused UI fix: each strategy bullet now shows tiny Edit and Remove buttons when Parc Ferme is OFF, with inline edit mode and keyboard shortcuts (Enter save, Escape cancel).
-  - Added guarded note-list update paths that continue to rely on `sessionStore.updateStrategyNote`, so Parc Ferme ON still blocks mutation.
-  - Verified stability with `npm run test -- src/stores/sessionStore.test.ts` and `npm run build` (successful).
+- **2026-05-01** — Fixed BUG-013 (Car direction and start/finish line position)
+  - Traced root cause: SVG paths from the f1-circuits-svg repo have arbitrary start points and drawing directions that don't match real F1 layout.
+  - Added `startOffset: number` and `reversed: boolean` to `src/types/track.ts`.
+  - Updated `track()` helper in `src/data/tracks/trackCatalog.ts` to accept the new fields; populated real values for all 24 circuits.
+  - Updated `src/components/TrackRenderer/TrackRenderer.tsx` to: (1) accept and apply `startOffset`/`reversed` props, (2) compute an `adjustedProgress` before all SVG queries, (3) place the S/F line marker at the `startOffset` fraction rather than path origin, (4) add 180° to car angle when `reversed`.
+  - Verified stability with `npm run build` (successful).
+
+- **2026-05-01** — Fixed BUG-014 (Inaccurate lap count per session)
+  - Traced root cause: `calculateLapInfo` used `BASE_LAP_SECONDS (300) × lapTimeFactor`, giving ~5 laps on any default track regardless of real circuit length.
+  - Replaced `lapTimeFactor` with `lapTimeSec` on the `Track` interface.
+  - Removed `BASE_LAP_SECONDS` export from `src/engine/progressCalculator.ts`.
+  - Updated `calculateLapInfo` to `Math.ceil(targetDurationSec / lapTimeSec)`, matching real F1 lap counts (e.g. 25-min Monaco session → ~20 laps).
+  - Updated callers in `src/screens/RaceScreen/RaceScreen.tsx` and `src/screens/SummaryScreen/SummaryScreen.tsx`.
+  - Verified stability with `npm run build` (successful).
 
 ---
 

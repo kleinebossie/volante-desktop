@@ -52,6 +52,18 @@ interface TrackRendererProps {
   accentColor?: string;
 
   /**
+   * Fraction (0.0–1.0) along the SVG path where the real start/finish line sits.
+   * Shifts both the car's "zero" position and the S/F line marker.
+   */
+  startOffset?: number;
+
+  /**
+   * If true, the car travels in the opposite direction along the path,
+   * matching tracks whose SVG is drawn counter-clockwise.
+   */
+  reversed?: boolean;
+
+  /**
    * Optional: show a small debug label with the current lapProgress value.
    * Useful during step 5.6 hardcoded testing to verify car movement.
    * Default: false.
@@ -87,6 +99,8 @@ export function TrackRenderer({
   pathD,
   lapProgress,
   accentColor = 'var(--color-accent-red)',
+  startOffset = 0,
+  reversed = false,
   showDebugLabel = false,
 }: TrackRendererProps) {
   // ── Refs ──────────────────────────────────────────────────────────────────
@@ -139,13 +153,34 @@ export function TrackRenderer({
     }
   }, [pathD]);
 
+  // ── Apply direction/position correction ──────────────────────────────────
+  /**
+   * The raw `lapProgress` from the engine always runs 0→1 forward along the
+   * SVG path starting at its geometric origin (wherever the path data begins).
+   *
+   * We need two corrections:
+   *  1. `reversed` — some SVG paths are drawn counter-clockwise vs the real
+   *     circuit direction. Flip to 1-p so the car moves the right way.
+   *  2. `startOffset` — the real start/finish line is rarely at the path's
+   *     geometric origin. We shift the zero point by `startOffset` so the
+   *     car starts from the correct place on screen.
+   */
+  let adjustedProgress = lapProgress;
+  if (reversed) {
+    adjustedProgress = 1 - adjustedProgress;
+  }
+  adjustedProgress = (adjustedProgress + startOffset) % 1.0;
+
   // ── Compute car position ──────────────────────────────────────────────────
   /**
    * useTrackProgress calls getPointAtLength under the hood.
    * Returns { x, y, angle } — where the car should be and which
    * direction it should face.
    */
-  const carPos = useTrackProgress(pathElement, lapProgress);
+  const carPos = useTrackProgress(pathElement, adjustedProgress);
+
+  // Extra 180° when reversed so the car faces the direction it is travelling
+  const carAngle = reversed ? carPos.angle + 180 : carPos.angle;
 
   // ── Compute progress trail ────────────────────────────────────────────────
   /**
@@ -173,15 +208,21 @@ export function TrackRenderer({
     try {
       const totalLength = pathElement.getTotalLength();
       setPathLength(totalLength);
-      const pt = pathElement.getPointAtLength(0);
-      const ptAhead = pathElement.getPointAtLength(Math.min(2, totalLength));
+      // S/F line sits at the startOffset fraction along the path
+      const sfLength = startOffset * totalLength;
+      const pt = pathElement.getPointAtLength(sfLength);
+      // Sample a tiny bit ahead (respecting direction) to get the angle
+      const delta = reversed ? -2 : 2;
+      const ptAhead = pathElement.getPointAtLength(
+        Math.min(Math.max(0, sfLength + delta), totalLength)
+      );
       const angle =
         Math.atan2(ptAhead.y - pt.y, ptAhead.x - pt.x) * (180 / Math.PI);
       setStartPoint({ x: pt.x, y: pt.y, angle });
     } catch {
       // SVG not ready yet — safe to ignore
     }
-  }, [pathElement, pathD]);
+  }, [pathElement, pathD, startOffset, reversed]);
 
   // ── Car transform ─────────────────────────────────────────────────────────
   /**
@@ -195,7 +236,7 @@ export function TrackRenderer({
    */
   const carTransform = `
     translate(${carPos.x}, ${carPos.y})
-    rotate(${carPos.angle})
+    rotate(${carAngle})
     translate(${-CAR_WIDTH / 2}, ${-CAR_HEIGHT / 2})
   `;
 
@@ -266,14 +307,14 @@ export function TrackRenderer({
          * Shows the portion of the current lap that's been completed.
          * The trail starts at the start/finish line and ends at the car.
          */}
-        {pathLength > 0 && lapProgress > 0.01 && (
+        {pathLength > 0 && adjustedProgress > 0.01 && (
           <path
             d={pathD}
             className={styles.progressTrail}
             style={{
               stroke: accentColor,
               strokeDasharray: pathLength,
-              strokeDashoffset: pathLength - lapProgress * pathLength,
+              strokeDashoffset: pathLength - adjustedProgress * pathLength,
             }}
           />
         )}

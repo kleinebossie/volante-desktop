@@ -77,7 +77,7 @@ export function SummaryScreen() {
     return calculateLapInfo(
       finalizedSession.effectiveProgressSec,
       finalizedSession.targetDurationSec,
-      track.lapTimeFactor
+      track.lapTimeSec
     );
   }, [finalizedSession, track]);
 

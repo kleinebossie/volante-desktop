@@ -14,20 +14,7 @@
  */
 
 // ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-/**
- * Base lap duration in seconds — how long a single lap takes at the
- * default pace on a track with lapTimeFactor = 1.0.
- *
- * Set to 300 seconds (5 minutes) so that a 25-minute session produces
- * roughly 5 laps, which feels natural:
- *   - 25 min ÷ 5 min = 5 laps
- *   - Monaco (factor 0.6): 25 min ÷ 3 min = ~8 laps (short fast laps)
- *   - Spa (factor 1.3): 25 min ÷ 6.5 min = ~4 laps (long sweeping laps)
- */
-export const BASE_LAP_SECONDS = 300;
+// (No top-level constants — lap times are now per-track real values)
 
 // ---------------------------------------------------------------------------
 // Effective progress
@@ -80,30 +67,24 @@ export interface LapInfo {
 /**
  * Calculate which lap the user is on and how far through that lap they are.
  *
- * The number of laps depends on:
- *   - Session duration (longer session = more laps)
- *   - Track's lapTimeFactor (shorter tracks = more laps)
- *
- * For example, a 25-minute session on a track with factor 1.0 gives 5 laps.
- * The same session on Monaco (factor 0.6) gives about 8 laps.
+ * The number of laps is based on the real-world F1 lap time for the track:
+ *   - Monaco (76 s lap): a 25-min session gives ceil(1500 / 76) = 20 laps
+ *   - Spa (107 s lap): a 25-min session gives ceil(1500 / 107) = 15 laps
  *
  * @param effectiveProgressSec  How much effective progress (in seconds) the user has made
  * @param targetDurationSec     The total session duration in seconds
- * @param lapTimeFactor         The track's lap time multiplier
+ * @param lapTimeSec            The track's approximate real F1 lap time in seconds
  * @returns                     Lap information (current lap, total laps, progress within lap)
  */
 export function calculateLapInfo(
   effectiveProgressSec: number,
   targetDurationSec: number,
-  lapTimeFactor: number
+  lapTimeSec: number
 ): LapInfo {
-  // How many laps fit into the session?
-  // Higher total laps = shorter individual laps.
-  const totalLaps = Math.ceil(
-    targetDurationSec / (BASE_LAP_SECONDS * lapTimeFactor)
-  );
+  // How many laps fit into the session based on the real lap time?
+  const totalLaps = Math.ceil(targetDurationSec / lapTimeSec);
 
-  // How long each lap takes (in effective seconds)
+  // Spread target duration evenly across all laps
   const lapDurationSec = targetDurationSec / totalLaps;
 
   // What lap are we on? (1-based, so lap 1 is the first lap)

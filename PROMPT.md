@@ -24,7 +24,7 @@ You are an expert software engineer stabilizing and debugging a desktop applicat
 
 ## Project Context
 
-This is a cross-platform desktop deep-work timer app. We are currently in the **v0 stabilization phase**. The core features are built according to `ARCHITECTURE.md`, but the app is currently buggy and unstable. **Our sole focus is fixing bugs to reach a stable v1.0 release.** We are NOT adding new features right now.
+This is a cross-platform desktop deep-work timer app. We are currently in the **v0 stabilization phase**. The core features are built according to `ARCHITECTURE.md`, but the app is currently buggy an4d unstable. **Our sole focus is fixing bugs to reach a stable v1.0 release.** We are NOT adding new features right now.
 
 Attached are:
 1. `CONTEXT.md` (Read first to see our active bug list and current state).
