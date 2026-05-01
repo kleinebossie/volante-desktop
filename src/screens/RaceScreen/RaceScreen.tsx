@@ -31,12 +31,16 @@ export function RaceScreen() {
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const abandonSession = useSessionStore((s) => s.abandonSession);
+  const updateStrategyNote = useSessionStore((s) => s.updateStrategyNote);
   const applyPenalty = useSessionStore((s) => s.applyPenalty);
   const deactivateRegulation = useSessionStore((s) => s.deactivateRegulation);
   const addEvent = useSessionStore((s) => s.addEvent);
   const settings = useSettingsStore((s) => s.settings);
   const { ruleset, regulations, activate } = useRegulations();
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
+  const [strategyDraftNote, setStrategyDraftNote] = useState('');
+  const [editingStrategyIndex, setEditingStrategyIndex] = useState<number | null>(null);
+  const [editingStrategyDraft, setEditingStrategyDraft] = useState('');
 
   if (!session) {
     return (
@@ -79,6 +83,29 @@ export function RaceScreen() {
     return null;
   }, [session.events]);
   const [showPenaltyFlash, setShowPenaltyFlash] = useState(false);
+  const strategyNotes = useMemo(
+    () =>
+      session.strategyNote
+        .split('\n')
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0),
+    [session.strategyNote]
+  );
+  const canEditStrategy = !session.parcFermeEnabled
+    && (session.state === 'running' || session.state === 'paused');
+
+  const persistStrategyNotes = (notes: string[]) => {
+    if (!canEditStrategy) {
+      return;
+    }
+
+    updateStrategyNote(
+      notes
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+        .join('\n')
+    );
+  };
 
   useEffect(() => {
     if (!latestPenaltyEventId) return;
@@ -133,6 +160,65 @@ export function RaceScreen() {
   const handleConfirmAbandon = () => {
     setShowAbandonConfirm(false);
     abandonSession();
+  };
+
+  const commitStrategyDraft = () => {
+    const trimmed = strategyDraftNote.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    persistStrategyNotes([...strategyNotes, trimmed]);
+    setStrategyDraftNote('');
+  };
+
+  const handleRemoveStrategyNote = (index: number) => {
+    if (!canEditStrategy) {
+      return;
+    }
+
+    persistStrategyNotes(strategyNotes.filter((_, noteIndex) => noteIndex !== index));
+
+    if (editingStrategyIndex === index) {
+      setEditingStrategyIndex(null);
+      setEditingStrategyDraft('');
+      return;
+    }
+
+    if (editingStrategyIndex !== null && index < editingStrategyIndex) {
+      setEditingStrategyIndex(editingStrategyIndex - 1);
+    }
+  };
+
+  const handleStartEditStrategyNote = (index: number) => {
+    if (!canEditStrategy) {
+      return;
+    }
+
+    setEditingStrategyIndex(index);
+    setEditingStrategyDraft(strategyNotes[index] ?? '');
+  };
+
+  const handleCancelEditStrategyNote = () => {
+    setEditingStrategyIndex(null);
+    setEditingStrategyDraft('');
+  };
+
+  const handleSaveEditStrategyNote = () => {
+    if (!canEditStrategy || editingStrategyIndex === null) {
+      return;
+    }
+
+    const trimmed = editingStrategyDraft.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const nextNotes = [...strategyNotes];
+    nextNotes[editingStrategyIndex] = trimmed;
+    persistStrategyNotes(nextNotes);
+    setEditingStrategyIndex(null);
+    setEditingStrategyDraft('');
   };
 
   return (
@@ -235,7 +321,100 @@ export function RaceScreen() {
 
       <div className={styles.footerRow}>
         <div className={styles.strategy}>
-          Strategy: {session.strategyNote || 'No strategy note set.'}
+          <span className={styles.strategyLabel}>Strategy:</span>
+          {strategyNotes.length > 0 ? (
+            <ul className={styles.strategyList}>
+              {strategyNotes.map((item, index) => (
+                <li key={`${item}-${index}`} className={styles.strategyItem}>
+                  {canEditStrategy && editingStrategyIndex === index ? (
+                    <div className={styles.strategyEditRow}>
+                      <input
+                        type="text"
+                        className={styles.strategyEditInput}
+                        value={editingStrategyDraft}
+                        onChange={(event) => setEditingStrategyDraft(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault();
+                            handleSaveEditStrategyNote();
+                          }
+
+                          if (event.key === 'Escape') {
+                            event.preventDefault();
+                            handleCancelEditStrategyNote();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.noteActionButton}
+                        onClick={handleSaveEditStrategyNote}
+                        aria-label="Save edited strategy note"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.noteActionButton}
+                        onClick={handleCancelEditStrategyNote}
+                        aria-label="Cancel editing strategy note"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className={styles.strategyItemText}>{item}</span>
+                      {canEditStrategy ? (
+                        <span className={styles.strategyItemActions}>
+                          <button
+                            type="button"
+                            className={styles.noteActionButton}
+                            onClick={() => handleStartEditStrategyNote(index)}
+                            aria-label="Edit strategy note"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.noteActionButton} ${styles.noteRemoveButton}`}
+                            onClick={() => handleRemoveStrategyNote(index)}
+                            aria-label="Remove strategy note"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ) : null}
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <span className={styles.strategyEmpty}>No strategy note set.</span>
+          )}
+
+          {canEditStrategy ? (
+            <div className={styles.strategyInputRow}>
+              <input
+                type="text"
+                className={styles.strategyInput}
+                placeholder="Add note and press Enter"
+                value={strategyDraftNote}
+                onChange={(event) => setStrategyDraftNote(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') {
+                    return;
+                  }
+
+                  event.preventDefault();
+                  commitStrategyDraft();
+                }}
+              />
+            </div>
+          ) : (
+            <span className={styles.strategyLockHint}>Locked by Parc Ferme.</span>
+          )}
         </div>
         <button
           type="button"
