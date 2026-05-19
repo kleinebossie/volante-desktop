@@ -6,9 +6,9 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-01
-- **By**: Antigravity (Claude Sonnet 4.6 Thinking)
-- **Session summary**: Fixed car direction/start-finish line position (BUG-013) and inaccurate lap counts (BUG-014) by replacing lapTimeFactor with real lap times, adding startOffset/reversed per-track, and applying corrections in TrackRenderer.
+- **Date**: 2026-05-19
+- **By**: Antigravity (Gemini 3 Flash)
+- **Session summary**: Fine-tuned Yas Marina startOffset to 0.35 and fixed the progress trail drawing glitch (BUG-015) where the track incorrectly lit up from the path origin instead of the start/finish line.
 
 ---
 
@@ -16,7 +16,7 @@
 
 - **Goal**: Reach zero critical/medium bugs to cut the v1.0 release.
 - **Current Branch**: `main` (Stable baseline)
-- **Active Bug/Task**: _None currently (BUG-001 through BUG-014 resolved)_
+- **Active Bug/Task**: _None currently (BUG-001 through BUG-015 resolved)_
 
 ---
 
@@ -53,6 +53,7 @@
 | BUG-012 | 🟡 Medium | During race with Parc Ferme OFF, users could add strategy bullets but could not edit or remove existing ones, so strategy control was still incomplete.           | Updated `RaceScreen` to add tiny per-bullet Edit and Remove controls when unlocked, plus inline edit mode (Save/Cancel, Enter to save, Escape to cancel). Controls remain hidden/disabled under Parc Ferme ON, preserving lock behavior.                                                             | 2026-04-24    |
 | BUG-013 | 🟡 Medium | The car start/finish line marker and car direction were incorrect for many tracks — the SVG path origin and drawing direction are arbitrary and don't match real circuits. | Added `startOffset: number` and `reversed: boolean` to the `Track` type and all 24 catalog entries. Updated `TrackRenderer` to apply these corrections to `lapProgress` before computing car position, start/finish line, and progress trail. Added 180° angle correction when reversed.   | 2026-05-01    |
 | BUG-014 | 🟡 Medium | Lap count per session was based on a rough `lapTimeFactor` multiplier (×300 s base), giving unrealistic totals (e.g. ~8 laps on Monaco instead of ~20).              | Replaced `lapTimeFactor` with `lapTimeSec` (real F1 lap time) on the `Track` type. Removed `BASE_LAP_SECONDS` constant. Updated `calculateLapInfo` to use `Math.ceil(targetDurationSec / lapTimeSec)` directly. Updated all callers: `RaceScreen`, `SummaryScreen`.                            | 2026-05-01    |
+| BUG-015 | 🟡 Medium | Progress trail (the glowing segment behind the car) was lit up incorrectly starting from the path origin instead of the start/finish line.                          | Updated progress trail in `TrackRenderer.tsx` to set the exact trail segment length via `strokeDasharray` and align its starting point with the start/finish line using a negative `strokeDashoffset` based on `startOffset` (or `adjustedProgress` when reversed).| 2026-05-19    |
 
 ---
 
@@ -177,6 +178,10 @@
   - Removed `BASE_LAP_SECONDS` export from `src/engine/progressCalculator.ts`.
   - Updated `calculateLapInfo` to `Math.ceil(targetDurationSec / lapTimeSec)`, matching real F1 lap counts (e.g. 25-min Monaco session → ~20 laps).
   - Updated callers in `src/screens/RaceScreen/RaceScreen.tsx` and `src/screens/SummaryScreen/SummaryScreen.tsx`.
+- **2026-05-19** — Fixed BUG-015 (Progress trail alignment glitch) and tuned track offsets
+  - Traced root cause of trail glitch: The progress trail stroke calculation used `adjustedProgress`, which already includes the start offset. This caused a segment of the track to light up between the path's default geometric start point and the actual start/finish line even when progress was 0.
+  - Implemented focused fix: Decoupled trail segment length from starting position in `TrackRenderer.tsx` by setting `strokeDasharray` to the lap progress length and using a negative `strokeDashoffset` to position the start of the trail exactly at the start/finish line.
+  - Updated track offset calibrations in `src/data/tracks/trackCatalog.ts`, including tuning `yas-marina`'s start offset to `0.35` and `montreal`'s start offset to `0.4`.
   - Verified stability with `npm run build` (successful).
 
 ---

@@ -306,15 +306,28 @@ export function TrackRenderer({
          * ── PROGRESS TRAIL (colored segment behind the car) ──────────────
          * Shows the portion of the current lap that's been completed.
          * The trail starts at the start/finish line and ends at the car.
+         *
+         * How the dash math works:
+         *   - strokeDasharray: [trailLength, pathLength]
+         *     → a single visible dash of exactly `lapProgress * pathLength`
+         *       followed by a gap large enough to hide the rest of the path.
+         *   - strokeDashoffset: -(startPosition * pathLength)  [negative]
+         *     → shifts the dash forward along the path so it begins at the
+         *       real start/finish line, not at the SVG path's origin (pos 0).
+         *
+         * For normal (non-reversed) tracks the trail starts at `startOffset`.
+         * For reversed tracks the car moves backward along the path, so the
+         * trail segment runs from `adjustedProgress` (car) up to `startOffset`
+         * — start of the visible dash = adjustedProgress.
          */}
-        {pathLength > 0 && adjustedProgress > 0.01 && (
+        {pathLength > 0 && lapProgress > 0.01 && (
           <path
             d={pathD}
             className={styles.progressTrail}
             style={{
               stroke: accentColor,
-              strokeDasharray: pathLength,
-              strokeDashoffset: pathLength - adjustedProgress * pathLength,
+              strokeDasharray: `${lapProgress * pathLength} ${pathLength}`,
+              strokeDashoffset: -(reversed ? adjustedProgress : startOffset) * pathLength,
             }}
           />
         )}

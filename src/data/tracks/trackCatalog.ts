@@ -30,7 +30,7 @@ export const TRACK_CATALOG: Track[] = [
   track('bahrain',           'bahrain-1',            'Bahrain International Circuit',       'bahrain',                'Bahrain',            '🇧🇭', 0.9,  true,   92,  '#d4a844'),
   track('jeddah',            'jeddah-1',             'Jeddah Corniche Circuit',             'saudi-arabia',           'Saudi Arabia',       '🇸🇦', 0.05, false,  93,  '#1a7a3a'),
   track('miami',             'miami-1',              'Miami International Autodrome',       'united-states-of-america','USA (Miami)',        '🇺🇸', 0,    false,  93,  '#f4a261'),
-  track('montreal',          'montreal-6',           'Circuit Gilles Villeneuve',           'canada',                 'Canada',             '🇨🇦', 0.45, false,  76,  '#ff0000'),
+  track('montreal',          'montreal-6',           'Circuit Gilles Villeneuve',           'canada',                 'Canada',             '🇨🇦', 0.4,  false,  76,  '#ff0000'),
   track('monaco',            'monaco-6',             'Circuit de Monaco',                   'monaco',                 'Monaco',             '🇲🇨', 0.3,  false,  76,  '#c8102e'),
   track('catalunya',         'catalunya-6',          'Circuit de Barcelona-Catalunya',      'spain',                  'Spain',              '🇪🇸', 0.1,  false,  79,  '#f1bf00'),
   track('spielberg',         'spielberg-3',          'Red Bull Ring',                       'austria',                'Austria',            '🇦🇹', 0.85, true,   70,  '#ed1c24'),
@@ -47,5 +47,5 @@ export const TRACK_CATALOG: Track[] = [
   track('interlagos',        'interlagos-2',         'Autódromo José Carlos Pace',          'brazil',                 'Brazil',             '🇧🇷', 0.15, false,  75,  '#009739'),
   track('las-vegas',         'las-vegas-1',          'Las Vegas Street Circuit',            'united-states-of-america','USA (Las Vegas)',    '🇺🇸', 0.5,  false,  97,  '#b4975a'),
   track('lusail',            'lusail-1',             'Lusail International Circuit',        'qatar',                  'Qatar',              '🇶🇦', 0,    false,  87,  '#8a1538'),
-  track('yas-marina',        'yas-marina-2',         'Yas Marina Circuit',                  'united-arab-emirates',   'Abu Dhabi',          '🇦🇪', 0.3,  true,   89,  '#c8102e'),
+  track('yas-marina',        'yas-marina-2',         'Yas Marina Circuit',                  'united-arab-emirates',   'Abu Dhabi',          '🇦🇪', 0.35,  true,   89,  '#c8102e'),
 ];
