@@ -54,6 +54,8 @@
 | BUG-013 | 🟡 Medium | The car start/finish line marker and car direction were incorrect for many tracks — the SVG path origin and drawing direction are arbitrary and don't match real circuits. | Added `startOffset: number` and `reversed: boolean` to the `Track` type and all 24 catalog entries. Updated `TrackRenderer` to apply these corrections to `lapProgress` before computing car position, start/finish line, and progress trail. Added 180° angle correction when reversed.   | 2026-05-01    |
 | BUG-014 | 🟡 Medium | Lap count per session was based on a rough `lapTimeFactor` multiplier (×300 s base), giving unrealistic totals (e.g. ~8 laps on Monaco instead of ~20).              | Replaced `lapTimeFactor` with `lapTimeSec` (real F1 lap time) on the `Track` type. Removed `BASE_LAP_SECONDS` constant. Updated `calculateLapInfo` to use `Math.ceil(targetDurationSec / lapTimeSec)` directly. Updated all callers: `RaceScreen`, `SummaryScreen`.                            | 2026-05-01    |
 | BUG-015 | 🟡 Medium | Progress trail (the glowing segment behind the car) was lit up incorrectly starting from the path origin instead of the start/finish line.                          | Updated progress trail in `TrackRenderer.tsx` to set the exact trail segment length via `strokeDasharray` and align its starting point with the start/finish line using a negative `strokeDashoffset` based on `startOffset` (or `adjustedProgress` when reversed).| 2026-05-19    |
+| BUG-016 | 🟡 Medium | Adding too many strategy notes during a race causes layout displacement and shrinks the track map.                                                                   | Limited strategy notes to 50 characters each on both Setup and Race screens. Restricted the max-height of the notes list to 90px and added vertical scrolling on the Race Screen to stabilize the layout. | 2026-06-01    |
+| BUG-017 | 🟡 Medium | Strategy notes on the Setup Screen could only be added, but not edited or deleted.                                                                                   | Updated `StrategyNote.tsx` and `StrategyNote.module.css` to add inline edit and remove buttons matching the Race Screen functionality, enabling full pre-race strategy notes management. | 2026-06-01    |
 
 ---
 
@@ -183,6 +185,12 @@
   - Implemented focused fix: Decoupled trail segment length from starting position in `TrackRenderer.tsx` by setting `strokeDasharray` to the lap progress length and using a negative `strokeDashoffset` to position the start of the trail exactly at the start/finish line.
   - Updated track offset calibrations in `src/data/tracks/trackCatalog.ts`, including tuning `yas-marina`'s start offset to `0.35` and `montreal`'s start offset to `0.4`.
   - Verified stability with `npm run build` (successful).
+
+- **2026-06-01** — Fixed BUG-016 (Strategy note layout overflow & character limit) and BUG-017 (Pre-race note edit/delete support)
+  - Traced race-screen layout issue to `.strategyList` growing vertically without bound in the flex container, shrinking the track map.
+  - Implemented focused CSS/JSX fix: limited note character length to 50 characters, and restricted the `.strategyList` height to 90px with `overflow-y: auto`.
+  - Added full interactive edit, cancel, save, and delete actions inside `StrategyNote.tsx` (and styled them in `StrategyNote.module.css`) to align the Setup screen functionality with the Race screen note management capabilities.
+  - Verified stability with `npm run test` and `npm run build` (successful).
 
 ---
 

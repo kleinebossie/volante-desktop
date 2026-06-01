@@ -168,7 +168,8 @@ export function RaceScreen() {
       return;
     }
 
-    persistStrategyNotes([...strategyNotes, trimmed]);
+    const truncated = trimmed.slice(0, 50);
+    persistStrategyNotes([...strategyNotes, truncated]);
     setStrategyDraftNote('');
   };
 
@@ -215,7 +216,7 @@ export function RaceScreen() {
     }
 
     const nextNotes = [...strategyNotes];
-    nextNotes[editingStrategyIndex] = trimmed;
+    nextNotes[editingStrategyIndex] = trimmed.slice(0, 50);
     persistStrategyNotes(nextNotes);
     setEditingStrategyIndex(null);
     setEditingStrategyDraft('');
@@ -335,6 +336,7 @@ export function RaceScreen() {
                         className={styles.strategyEditInput}
                         value={editingStrategyDraft}
                         onChange={(event) => setEditingStrategyDraft(event.target.value)}
+                        maxLength={50}
                         onKeyDown={(event) => {
                           if (event.key === 'Enter') {
                             event.preventDefault();
@@ -404,6 +406,7 @@ export function RaceScreen() {
                 placeholder="Add note and press Enter"
                 value={strategyDraftNote}
                 onChange={(event) => setStrategyDraftNote(event.target.value)}
+                maxLength={50}
                 onKeyDown={(event) => {
                   if (event.key !== 'Enter') {
                     return;
