@@ -62,11 +62,13 @@ npm run tauri build
 ```
 The compiled binaries will be located in `src-tauri/target/release/bundle/`.
 
-## 📄 Architecture
+## 📄 Architecture & Development
 
-This project was built using a strict "Vibe Coding" methodology guided by autonomous AI agents. The entire technical blueprint, data models, and state machine designs are documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+The codebase is structured into modular React components, custom hooks, and state stores. If you are extending the application:
+- Core session logic and calculators are located in `src/engine/`.
+- Screen views are found in `src/screens/`.
+- Shared state is managed via Zustand stores in `src/stores/`.
 
-If you are using an AI coding assistant (like Claude, GitHub Copilot, or Cursor) to work on this repo, please point it to [`PROMPT.md`](PROMPT.md) and [`CONTEXT.md`](CONTEXT.md) for instructions on how to safely extend the application without breaking the v0.1 core.
 
 ## 📜 License
 
