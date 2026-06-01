@@ -181,6 +181,8 @@
   flex-direction: column;
   gap: 2px;
   color: var(--color-text-primary);
+  max-height: 90px;
+  overflow-y: auto;
 }
 
 .strategyItem {
