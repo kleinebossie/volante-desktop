@@ -1,9 +1,9 @@
 /**
- * storage.ts — Persistence layer for Deep Work F1.
+ * storage.ts — Persistence layer for Volante.
  *
  * Wraps Tauri's filesystem API so the rest of the app never calls filesystem
  * functions directly. All data is stored as JSON files in the Tauri app data
- * directory (e.g., ~/.local/share/com.deepworkf1.app/ on Linux).
+ * directory (e.g., ~/.local/share/com.volante.app/ on Linux).
  *
  * File names used by this app:
  *   - "settings.json"  → UserSettings

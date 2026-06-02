@@ -1,10 +1,10 @@
-# 🏎️ Deep Work F1
+# 🏎️ Volante
 
-Deep Work F1 is a cross-platform desktop productivity app that uses Formula 1 race mechanics to make deep-work focus sessions more engaging and harder to abandon.
+Volante is a cross-platform desktop productivity app that uses Formula 1 race mechanics to make deep-work focus sessions more engaging and harder to abandon.
 
 Instead of a boring countdown timer, you pick a real F1 circuit. Your timer becomes a "race", and a car physically drives around the track map for the duration of your session.
 
-![Deep Work F1](https://via.placeholder.com/800x450.png?text=Deep+Work+F1+Screenshot) *(Replace with actual screenshot)*
+![Volante](https://via.placeholder.com/800x450.png?text=Volante+Screenshot) *(Replace with actual screenshot)*
 
 ## ✨ Features
 
@@ -45,8 +45,8 @@ If you want to build the app from source or contribute:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/deep-work-f1.git
-cd deep-work-f1
+git clone https://github.com/kleinebossie/volante-desktop.git
+cd volante-desktop
 
 # Install frontend dependencies
 npm install

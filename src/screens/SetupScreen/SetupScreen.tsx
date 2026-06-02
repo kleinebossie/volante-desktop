@@ -103,7 +103,7 @@ export function SetupScreen() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.appTitle}>Deep Work F1</h1>
+        <h1 className={styles.appTitle}>Volante</h1>
         <button
           type="button"
           className={styles.settingsButton}
