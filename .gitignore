@@ -26,5 +26,6 @@ dist-ssr
 CONTEXT.md
 ARCHITECTURE.md
 PROMPT.md
+RELEASE.md
 .antigravitycli/
 .agents/
