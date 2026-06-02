@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Deep Work F1",
+  "productName": "Volante",
   "version": "0.1.0",
-  "identifier": "com.deepworkf1.app",
+  "identifier": "com.volante.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Deep Work F1",
+        "title": "Volante",
         "width": 1100,
         "height": 750,
         "minWidth": 900,

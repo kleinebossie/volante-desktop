@@ -1,6 +1,6 @@
-# Deep Work F1 — Roadmap (Post-v0.1)
+# Volante — Roadmap (Post-v0.1)
 
-> **Purpose of this file**: This file tracks the backlog of ideas, features, and improvements planned for Deep Work F1 after the completion of v0.1. 
+> **Purpose of this file**: This file tracks the backlog of ideas, features, and improvements planned for Volante after the completion of v0.1. 
 > 
 > **Workflow Rule**: Pick ONE feature from this list, create a new git branch (`git checkout -b feature/[name]`), and have the AI implement it using the Day 2 prompt template in `PROMPT.md`.
 

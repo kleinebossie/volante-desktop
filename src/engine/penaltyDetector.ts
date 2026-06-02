@@ -1,7 +1,7 @@
 /**
  * penaltyDetector.ts — Logic for detecting penalty-triggering events.
  *
- * In Deep Work F1, penalties subtract progress when the user does
+ * In Volante, penalties subtract progress when the user does
  * something that breaks their focus:
  *
  *   1. **Pause penalty** — user clicks the pause button
