@@ -1,57 +1,89 @@
 # 🏎️ Volante
 
-Volante is a cross-platform desktop productivity app that uses Formula 1 race mechanics to make deep-work focus sessions more engaging and harder to abandon.
+[![Release](https://img.shields.io/github/v/release/kleinebossie/volante-desktop?include_prereleases&style=flat-square&color=e10600)](https://github.com/kleinebossie/volante-desktop/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/kleinebossie/volante-desktop/release.yml?style=flat-square&label=build)](https://github.com/kleinebossie/volante-desktop/actions)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)]()
+[![Stars](https://img.shields.io/github/stars/kleinebossie/volante-desktop?style=flat-square&color=ffd700)](https://github.com/kleinebossie/volante-desktop/stargazers)
 
-Instead of a boring countdown timer, you pick a real F1 circuit. Your timer becomes a "race", and a car physically drives around the track map for the duration of your session.
+**A desktop focus timer that uses Formula 1 race mechanics to make deep-work sessions engaging and hard to abandon.**
 
-![Volante](https://via.placeholder.com/800x450.png?text=Volante+Screenshot) *(Replace with actual screenshot)*
+Pick a real F1 track. Start a race. A car drives around the circuit for the duration of your session. Use Boost and Overtake to speed up your timer — but if you pause, alt-tab, or go idle, the stewards will penalize you.
+
+> 🔒 100% local. Zero cloud. Zero tracking. Your data never leaves your machine.
+
+![Volante - Race Screen](screenshot-race.png)
 
 ## ✨ Features
 
-- **24 Real F1 Circuits:** Choose from the full 2026 calendar (Bahrain, Monaco, Silverstone, etc.).
-- **Live Track Visualization:** Watch your car progress around the actual SVG path of the track as your timer ticks down.
-- **Race Regulations:** Use "Boost", "Overtake", and "DRS" buttons. These speed up your timer, but demand proportionally harder effort from you.
-- **Strict Penalties:** The "Stewards" are watching. Pausing the timer, alt-tabbing to other apps, or going idle will result in time penalties that reduce your effective progress.
-- **Strategy Notes:** Set a "Parc Fermé" locked intention before you start, so you know exactly what you are focusing on.
-- **Local First:** 100% offline. All session history and settings are saved locally on your machine. Zero tracking.
+| Feature                         | Description                                                                            |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| 🏁 **24 Real F1 Circuits**      | Every track on the 2026 calendar — Bahrain, Monaco, Silverstone, Spa, and more         |
+| 🚗 **Live Track Visualization** | Your car physically drives around the accurate SVG map of the circuit                  |
+| ⚡ **Race Regulations**         | Boost (2x pace), Overtake (2.5x pace), and DRS (1.5x pace) — with cooldowns and limits |
+| 🚨 **Penalty System**           | Pausing, alt-tabbing, or going idle triggers steward penalties that cost you time      |
+| 📝 **Strategy Notes**           | Write your focus plan with optional Parc Fermé lock                                    |
+| 📊 **Session History**          | Every completed race is saved with full stats and penalty timeline                     |
+| 🎨 **F1 Broadcast UI**          | Dark theme inspired by race control rooms — neon accents, smooth animations            |
+| 🔒 **Local-First Privacy**      | All data stored locally. No accounts. No telemetry. No internet required.              |
+| 📅 **Season Rulesets**          | Switch between 2025 regulations (DRS + Overtake) and 2026 (Boost + Overtake)           |
 
-## 📦 Installation
+## 🖥️ Platform Support
 
-Head over to the [Releases page](../../releases/latest) to download the installer for your operating system:
+| Platform                 | Status      | Notes                             |
+| ------------------------ | ----------- | --------------------------------- |
+| 🐧 Linux (Ubuntu 24.04+) | ✅ Tested   | Primary development platform      |
+| 🍎 macOS (Apple Silicon) | ⚠️ Untested | CI-built, needs community testing |
+| 🍎 macOS (Intel)         | ⚠️ Untested | CI-built, needs community testing |
+| 🪟 Windows 10/11         | ⚠️ Untested | CI-built, needs community testing |
 
-- **Windows**: Download the `.msi` or `.exe` installer.
-- **macOS**: Download the `.dmg` or `.app.tar.gz`.
-- **Linux**: Download the `.AppImage` or `.deb`.
+> 🧪 **Testers wanted!** If you're on macOS or Windows, please try the [latest release](https://github.com/kleinebossie/volante-desktop/releases) and [report your experience](https://github.com/kleinebossie/volante-desktop/issues/new?template=platform_report.md).
 
-## 🛠️ Tech Stack
+## 📥 Installation
 
-Built for speed, safety, and a tiny footprint:
-- **Core Shell**: [Tauri v2](https://v2.tauri.app/) (Rust)
-- **Frontend**: React 19 + TypeScript + Vite
-- **State Management**: Zustand
-- **Styling**: Vanilla CSS Modules (No heavy utility frameworks)
-- **Animations**: Framer Motion
+Download the latest release for your platform from the [Releases page](https://github.com/kleinebossie/volante-desktop/releases/latest).
+
+### Linux
+
+**Debian/Ubuntu** (`.deb`):
+
+```bash
+sudo dpkg -i volante-desktop_*.deb
+```
+
+**Universal** (`.AppImage`):
+
+```bash
+chmod +x volante-desktop_*.AppImage
+./volante-desktop_*.AppImage
+```
+
+### macOS
+
+Download the `.dmg` file (choose `aarch64` for Apple Silicon or `x64` for Intel).
+
+> The app is not notarized. You may need to right-click → "Open" on first launch, or run `xattr -c "/Applications/Volante.app"` in Terminal.
+
+### Windows
+
+Download and run the `.msi` installer.
+
+> Windows may show a SmartScreen warning. Click "More info" → "Run anyway."
 
 ## 🚀 Development Setup
 
-If you want to build the app from source or contribute:
-
 ### Prerequisites
-1. [Node.js](https://nodejs.org/) (v20 or higher)
-2. [Rust](https://rustup.rs/) (v1.94 or higher)
-3. OS-specific build dependencies (see [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/))
+
+1. [Node.js](https://nodejs.org/) v20 or higher
+2. [Rust](https://rustup.rs/) v1.70 or higher
+3. Platform-specific dependencies — see [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 ### Running Locally
 
 ```bash
-# Clone the repository
 git clone https://github.com/kleinebossie/volante-desktop.git
 cd volante-desktop
-
-# Install frontend dependencies
 npm install
-
-# Start the development server and desktop app
 npm run tauri dev
 ```
 
@@ -60,18 +92,38 @@ npm run tauri dev
 ```bash
 npm run tauri build
 ```
-The compiled binaries will be located in `src-tauri/target/release/bundle/`.
 
-## 📄 Architecture & Development
+Compiled binaries: `src-tauri/target/release/bundle/`
 
-The codebase is structured into modular React components, custom hooks, and state stores. If you are extending the application:
-- Core session logic and calculators are located in `src/engine/`.
-- Screen views are found in `src/screens/`.
-- Shared state is managed via Zustand stores in `src/stores/`.
+### Running Tests
 
+```bash
+npm run test
+```
 
-## 📜 License
+## 🤝 Contributing
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Contributions are welcome! Whether it's bug reports, feature ideas, code, or documentation — every bit helps.
+
+- 📖 Read the [Contributing Guide](CONTRIBUTING.md)
+- 🐛 [Report a bug](https://github.com/kleinebossie/volante-desktop/issues/new?template=bug_report.md)
+- ✨ [Request a feature](https://github.com/kleinebossie/volante-desktop/issues/new?template=feature_request.md)
+- 💬 [Join the discussion](https://github.com/kleinebossie/volante-desktop/discussions)
+- 🏷️ Check out [`good first issue`](https://github.com/kleinebossie/volante-desktop/labels/good%20first%20issue) for easy ways to get started
+
+## 📋 Roadmap
+
+See the [Roadmap](ROADMAP.md) for planned features and releases.
+
+## 🙏 Credits
+
+- **Track SVG data**: [julesr0y/f1-circuits-svg](https://github.com/julesr0y/f1-circuits-svg) by Jules Roy — licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)
+- **Built with**: [Tauri v2](https://v2.tauri.app/) · [React 19](https://react.dev/) · [TypeScript](https://www.typescriptlang.org/) · [Zustand](https://zustand.docs.pmnd.rs/) · [Framer Motion](https://motion.dev/) · [Vite](https://vite.dev/)
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
 
 *Disclaimer: This app is not affiliated with, endorsed by, or sponsored by Formula One World Championship Limited or any of its affiliates. "F1" and "FORMULA 1" are trademarks of Formula One Licensing BV.*
