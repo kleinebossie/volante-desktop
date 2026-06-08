@@ -58,22 +58,6 @@ export function canTransition(from: SessionState, to: SessionState): boolean {
 }
 
 /**
- * Get every state that can be reached from the given state.
- *
- * Useful for UI to know which buttons to enable/disable.
- *
- * @param from  The session's current state
- * @returns     Array of reachable states (may be empty for terminal states)
- *
- * @example
- * getValidTransitions('running');  // ['paused', 'completed', 'abandoned']
- * getValidTransitions('completed'); // []
- */
-export function getValidTransitions(from: SessionState): SessionState[] {
-  return VALID_TRANSITIONS[from] ?? [];
-}
-
-/**
  * Check whether the given state is a terminal (final) state.
  *
  * Terminal states have no outgoing transitions — the session is done.
