@@ -105,23 +105,6 @@ export function getPointAtProgress(
 }
 
 // ---------------------------------------------------------------------------
-// Get the starting point of a path (position 0)
-// ---------------------------------------------------------------------------
-
-/**
- * Get the (x, y, angle) at the very start of the path.
- *
- * Useful for positioning the car at the starting grid before the
- * session begins.
- *
- * @param pathElement  A rendered SVG `<path>` element
- * @returns            The start position and heading direction
- */
-export function getStartPoint(pathElement: SVGPathElement): TrackPoint {
-  return getPointAtProgress(pathElement, 0);
-}
-
-// ---------------------------------------------------------------------------
 // Get the total length of a path
 // ---------------------------------------------------------------------------
 
@@ -138,41 +121,3 @@ export function getPathLength(pathElement: SVGPathElement): number {
   return pathElement.getTotalLength();
 }
 
-// ---------------------------------------------------------------------------
-// Generate a trail (series of points along a portion of the path)
-// ---------------------------------------------------------------------------
-
-/**
- * Generate a series of points along a section of the path.
- *
- * Used to draw the "progress trail" behind the car — a colored line
- * showing how much of the current lap has been completed.
- *
- * @param pathElement  A rendered SVG `<path>` element
- * @param fromProgress Start of the trail (0.0 to 1.0)
- * @param toProgress   End of the trail (0.0 to 1.0)
- * @param numPoints    How many points to generate (more = smoother trail)
- * @returns            Array of {x, y} points forming the trail
- */
-export function getTrailPoints(
-  pathElement: SVGPathElement,
-  fromProgress: number,
-  toProgress: number,
-  numPoints: number = 50
-): Array<{ x: number; y: number }> {
-  if (numPoints < 2) return [];
-
-  const totalLength = pathElement.getTotalLength();
-  const from = Math.max(0, Math.min(1, fromProgress));
-  const to = Math.max(0, Math.min(1, toProgress));
-
-  const points: Array<{ x: number; y: number }> = [];
-
-  for (let i = 0; i < numPoints; i++) {
-    const t = from + (to - from) * (i / (numPoints - 1));
-    const point = pathElement.getPointAtLength(t * totalLength);
-    points.push({ x: point.x, y: point.y });
-  }
-
-  return points;
-}
