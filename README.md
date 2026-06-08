@@ -1,4 +1,8 @@
-# 🏎️ Volante
+# Volante
+
+<p align="center">
+  <img src="logo.png" alt="Volante Logo" width="200" />
+</p>
 
 [![Release](https://img.shields.io/github/v/release/kleinebossie/volante-desktop?include_prereleases&style=flat-square&color=e10600)](https://github.com/kleinebossie/volante-desktop/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
@@ -126,4 +130,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-*Disclaimer: This app is not affiliated with, endorsed by, or sponsored by Formula One World Championship Limited or any of its affiliates. "F1" and "FORMULA 1" are trademarks of Formula One Licensing BV.*
+_Disclaimer: This app is not affiliated with, endorsed by, or sponsored by Formula One World Championship Limited or any of its affiliates. "F1" and "FORMULA 1" are trademarks of Formula One Licensing BV._

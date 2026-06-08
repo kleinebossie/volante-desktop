@@ -103,7 +103,9 @@ export function SetupScreen() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.appTitle}>Volante</h1>
+        <div className={styles.titleWrapper}>
+          <img src="/logo.png" alt="Volante Logo" className={styles.logo} />
+        </div>
         <button
           type="button"
           className={styles.settingsButton}
