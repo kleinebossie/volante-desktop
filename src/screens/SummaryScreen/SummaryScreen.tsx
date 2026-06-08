@@ -149,6 +149,7 @@ export function SummaryScreen() {
     const items: PenaltyTimelineItem[] = [];
 
     const timeline = [...finalizedSession.events].sort((a, b) => a.timestamp - b.timestamp);
+    const regulationMap = new Map(ruleset.regulations.map((r) => [r.type, r]));
 
     for (const event of timeline) {
       if (event.type === 'penalty_applied') {
@@ -166,7 +167,7 @@ export function SummaryScreen() {
       if (event.type === 'regulation_interrupted') {
         const type = extractRegulationType(event);
         const penaltySec = getMetadataNumber(event, 'penaltySec') ?? 0;
-        const rule = ruleset.regulations.find((regulation) => regulation.type === type);
+        const rule = type ? regulationMap.get(type) : undefined;
         const label = rule ? `${rule.label} interrupted` : 'Regulation interrupted';
 
         items.push({
