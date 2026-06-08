@@ -18,18 +18,6 @@ export function formatMMSS(totalSeconds: number): string {
 }
 
 /**
- * Formats seconds into HH:MM:SS display format.
- * Example: formatHHMMSS(3661) → "01:01:01"
- */
-export function formatHHMMSS(totalSeconds: number): string {
-  const clampedSeconds = Math.max(0, Math.floor(totalSeconds));
-  const hours = Math.floor(clampedSeconds / 3600);
-  const minutes = Math.floor((clampedSeconds % 3600) / 60);
-  const seconds = clampedSeconds % 60;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-/**
  * Formats a penalty value as "+Xs" or "-Xs" for penalty feed display.
  * Example: formatPenalty(-10) → "-10s"
  * Example: formatPenalty(30) → "+30s"
