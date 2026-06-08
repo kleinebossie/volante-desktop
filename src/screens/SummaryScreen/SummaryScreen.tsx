@@ -81,6 +81,13 @@ export function SummaryScreen() {
     );
   }, [finalizedSession, track]);
 
+  const sortedTimeline = useMemo(() => {
+    if (!finalizedSession) {
+      return [];
+    }
+    return [...finalizedSession.events].sort((a, b) => a.timestamp - b.timestamp);
+  }, [finalizedSession]);
+
   const regulationUsage = useMemo<RegulationUsageItem[]>(() => {
     if (!finalizedSession || !ruleset) {
       return [];
@@ -93,7 +100,7 @@ export function SummaryScreen() {
       usageMap.set(regulation.type, { useCount: 0, activeSec: 0 });
     });
 
-    const timeline = [...finalizedSession.events].sort((a, b) => a.timestamp - b.timestamp);
+    const timeline = sortedTimeline;
     const sessionEndTime = finalizedSession.completedAt ?? Date.now();
 
     for (const event of timeline) {
@@ -139,7 +146,7 @@ export function SummaryScreen() {
         activeSec: usage?.activeSec ?? 0,
       };
     });
-  }, [finalizedSession, ruleset]);
+  }, [finalizedSession, ruleset, sortedTimeline]);
 
   const penaltyTimeline = useMemo<PenaltyTimelineItem[]>(() => {
     if (!finalizedSession || !ruleset) {
@@ -148,7 +155,7 @@ export function SummaryScreen() {
 
     const items: PenaltyTimelineItem[] = [];
 
-    const timeline = [...finalizedSession.events].sort((a, b) => a.timestamp - b.timestamp);
+    const timeline = sortedTimeline;
 
     for (const event of timeline) {
       if (event.type === 'penalty_applied') {
@@ -179,7 +186,7 @@ export function SummaryScreen() {
     }
 
     return items;
-  }, [finalizedSession, ruleset]);
+  }, [finalizedSession, ruleset, sortedTimeline]);
 
   const strategyNotes = useMemo(() => {
     if (!finalizedSession) {
