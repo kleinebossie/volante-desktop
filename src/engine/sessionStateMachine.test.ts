@@ -4,7 +4,6 @@ import {
   getValidTransitions,
   isTerminalState,
   isActiveState,
-  isTickingState,
 } from './sessionStateMachine';
 import type { SessionState } from '../types/session';
 
@@ -82,13 +81,4 @@ describe('sessionStateMachine', () => {
     });
   });
 
-  describe('isTickingState', () => {
-    it('correctly identifies ticking states', () => {
-      expect(isTickingState('setup')).toBe(false);
-      expect(isTickingState('running')).toBe(true);
-      expect(isTickingState('paused')).toBe(false);
-      expect(isTickingState('completed')).toBe(false);
-      expect(isTickingState('abandoned')).toBe(false);
-    });
-  });
 });
