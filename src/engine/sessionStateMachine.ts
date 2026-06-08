@@ -98,15 +98,3 @@ export function isActiveState(state: SessionState): boolean {
   return state === 'running' || state === 'paused';
 }
 
-/**
- * Check whether the timer should be ticking in this state.
- *
- * The timer only advances when the session is 'running' — not when
- * paused, not in setup, and not when finished.
- *
- * @param state  The session state to check
- * @returns      `true` only if state is 'running'
- */
-export function isTickingState(state: SessionState): boolean {
-  return state === 'running';
-}
