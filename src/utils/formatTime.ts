@@ -57,14 +57,6 @@ export function formatMinutes(totalMinutes: number): string {
 }
 
 /**
- * Converts minutes to seconds.
- * Example: minutesToSeconds(25) → 1500
- */
-export function minutesToSeconds(minutes: number): number {
-  return minutes * 60;
-}
-
-/**
  * Converts seconds to minutes (rounded down).
  * Example: secondsToMinutes(1500) → 25
  */
