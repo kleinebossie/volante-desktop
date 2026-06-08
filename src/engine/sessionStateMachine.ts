@@ -86,19 +86,6 @@ export function isTerminalState(state: SessionState): boolean {
 }
 
 /**
- * Check whether the session is in an active state (can still be ticked).
- *
- * An "active" session is one that is either running or paused — it hasn't
- * ended yet, but it may or may not be ticking the timer.
- *
- * @param state  The session state to check
- * @returns      `true` if running or paused
- */
-export function isActiveState(state: SessionState): boolean {
-  return state === 'running' || state === 'paused';
-}
-
-/**
  * Check whether the timer should be ticking in this state.
  *
  * The timer only advances when the session is 'running' — not when
