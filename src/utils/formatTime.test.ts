@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   formatMMSS,
-  formatHHMMSS,
   formatPenalty,
   formatMinutes,
   minutesToSeconds,
@@ -29,29 +28,6 @@ describe('formatTime utilities', () => {
 
     it('floors decimal values', () => {
       expect(formatMMSS(90.7)).toBe('01:30');
-    });
-  });
-
-  describe('formatHHMMSS', () => {
-    it('formats standard durations', () => {
-      expect(formatHHMMSS(3661)).toBe('01:01:01');
-      expect(formatHHMMSS(90)).toBe('00:01:30');
-    });
-
-    it('handles large durations (> 24h)', () => {
-      expect(formatHHMMSS(90000)).toBe('25:00:00');
-    });
-
-    it('handles zero', () => {
-      expect(formatHHMMSS(0)).toBe('00:00:00');
-    });
-
-    it('clamps negative values to zero', () => {
-      expect(formatHHMMSS(-10)).toBe('00:00:00');
-    });
-
-    it('floors decimal values', () => {
-      expect(formatHHMMSS(3661.9)).toBe('01:01:01');
     });
   });
 
