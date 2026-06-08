@@ -82,12 +82,21 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
   async addSession(session: Session) {
     const current = get().sessions;
 
-    // Deduplicate: remove any existing entry with this id (shouldn't normally
-    // happen but guards against double-saving on edge cases).
-    const deduped = current.filter(s => s.id !== session.id);
+    // Deduplicate: find if the session already exists to avoid double-saving.
+    const existingIndex = current.findIndex(s => s.id === session.id);
 
-    // Prepend new session (most recent first) and prune to the cap.
-    const updated = [session, ...deduped].slice(0, MAX_HISTORY_ENTRIES);
+    let updated: Session[];
+    if (existingIndex === -1) {
+      // New session: prepend and prune to the cap.
+      updated = [session, ...current].slice(0, MAX_HISTORY_ENTRIES);
+    } else {
+      // Existing session: remove from current position and move to front.
+      // Since it was already in the list, we don't need to slice again
+      // as the length will remain <= MAX_HISTORY_ENTRIES.
+      updated = [...current];
+      updated.splice(existingIndex, 1);
+      updated.unshift(session);
+    }
 
     set({ sessions: updated });
     await writeData(HISTORY_FILE, updated);
