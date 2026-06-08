@@ -105,23 +105,6 @@ export function getPointAtProgress(
 }
 
 // ---------------------------------------------------------------------------
-// Get the starting point of a path (position 0)
-// ---------------------------------------------------------------------------
-
-/**
- * Get the (x, y, angle) at the very start of the path.
- *
- * Useful for positioning the car at the starting grid before the
- * session begins.
- *
- * @param pathElement  A rendered SVG `<path>` element
- * @returns            The start position and heading direction
- */
-export function getStartPoint(pathElement: SVGPathElement): TrackPoint {
-  return getPointAtProgress(pathElement, 0);
-}
-
-// ---------------------------------------------------------------------------
 // Get the total length of a path
 // ---------------------------------------------------------------------------
 
