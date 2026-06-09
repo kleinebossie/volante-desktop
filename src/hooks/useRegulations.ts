@@ -101,8 +101,8 @@ export function useRegulations(): UseRegulationsResult {
   // Look up the season ruleset for the current session
   const ruleset = useMemo(() => {
     if (!session) return null;
-    return getSeasonByYear(session.seasonYear) ?? null;
-  }, [session?.seasonYear]);
+    return getSeasonByYear(session.seasonYear, session) ?? null;
+  }, [session?.seasonYear, session?.targetDurationSec]);
 
   // Build info for each regulation in the current season
   const regulations: RegulationInfo[] = useMemo(() => {

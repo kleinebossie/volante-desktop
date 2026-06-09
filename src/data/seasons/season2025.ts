@@ -24,7 +24,7 @@ export const season2025: SeasonRuleset = {
       paceMultiplier: 2.5,
       durationSec: 20,
       cooldownSec: 180,
-      maxUsesPerSession: 3,
+      maxUsesPerSession: 1,
       interruptionPenaltyMultiplier: 3.0,
       accentColor: 'var(--color-accent-orange)',
       icon: '🏁',

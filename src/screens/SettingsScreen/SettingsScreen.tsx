@@ -4,9 +4,10 @@ import { SEASONS } from '../../data/seasons';
 import { TRACKS } from '../../data/tracks';
 import { useSettingsStore } from '../../stores/settingsStore';
 import type { PenaltyTrigger } from '../../types/regulations';
+import type { UserSettings } from '../../types/settings';
 import styles from './SettingsScreen.module.css';
 
-const DURATION_MIN = 1;
+const DURATION_MIN = 5;
 const DURATION_MAX = 600;
 const IDLE_THRESHOLD_MIN = 10;
 const IDLE_THRESHOLD_MAX = 3600;
@@ -29,6 +30,26 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
     String(settings.idleThresholdSec)
   );
 
+  const [boostRelativeInput, setBoostRelativeInput] = useState(() =>
+    String(settings.boostRelativePercent)
+  );
+  const [boostMinInput, setBoostMinInput] = useState(() =>
+    String(Math.floor(settings.boostAbsoluteSec / 60))
+  );
+  const [boostSecInput, setBoostSecInput] = useState(() =>
+    String(settings.boostAbsoluteSec % 60)
+  );
+
+  const [overtakeRelativeInput, setOvertakeRelativeInput] = useState(() =>
+    String(settings.overtakeRelativePercent)
+  );
+  const [overtakeMinInput, setOvertakeMinInput] = useState(() =>
+    String(Math.floor(settings.overtakeAbsoluteSec / 60))
+  );
+  const [overtakeSecInput, setOvertakeSecInput] = useState(() =>
+    String(settings.overtakeAbsoluteSec % 60)
+  );
+
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -36,7 +57,24 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
 
     setDurationInput(String(settings.defaultDurationMin));
     setIdleThresholdInput(String(settings.idleThresholdSec));
-  }, [isOpen, settings.defaultDurationMin, settings.idleThresholdSec]);
+
+    setBoostRelativeInput(String(settings.boostRelativePercent));
+    setBoostMinInput(String(Math.floor(settings.boostAbsoluteSec / 60)));
+    setBoostSecInput(String(settings.boostAbsoluteSec % 60));
+
+    setOvertakeRelativeInput(String(settings.overtakeRelativePercent));
+    setOvertakeMinInput(String(Math.floor(settings.overtakeAbsoluteSec / 60)));
+    setOvertakeSecInput(String(settings.overtakeAbsoluteSec % 60));
+  }, [
+    isOpen,
+    settings.defaultDurationMin,
+    settings.idleThresholdSec,
+    settings.boostRelativePercent,
+    settings.boostAbsoluteSec,
+    settings.overtakeRelativePercent,
+    settings.overtakeAbsoluteSec,
+    settings.regulationDurationType,
+  ]);
 
   const parseInteger = (value: string): number | null => {
     if (!/^\d+$/.test(value)) {
@@ -99,6 +137,137 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
     }
 
     return clamped;
+  };
+
+  const parseMinSec = (mStr: string, sStr: string): number | null => {
+    const m = mStr === '' ? 0 : parseInteger(mStr);
+    const s = sStr === '' ? 0 : parseInteger(sStr);
+    if (m === null || s === null) {
+      return null;
+    }
+    return m * 60 + s;
+  };
+
+  const isBoostRelativeInvalid =
+    boostRelativeInput !== '' &&
+    (() => {
+      const parsed = parseInteger(boostRelativeInput);
+      const overtakeParsed = parseInteger(overtakeRelativeInput);
+      return (
+        parsed === null ||
+        parsed < 1 ||
+        (overtakeParsed !== null && parsed > overtakeParsed)
+      );
+    })();
+
+  const isOvertakeRelativeInvalid =
+    overtakeRelativeInput !== '' &&
+    (() => {
+      const parsed = parseInteger(overtakeRelativeInput);
+      const boostParsed = parseInteger(boostRelativeInput);
+      return (
+        parsed === null ||
+        (boostParsed !== null && parsed < boostParsed) ||
+        parsed > 50
+      );
+    })();
+
+  const isBoostAbsoluteInvalid =
+    (boostMinInput !== '' || boostSecInput !== '') &&
+    (() => {
+      const totalSec = parseMinSec(boostMinInput, boostSecInput);
+      const overtakeSec = parseMinSec(overtakeMinInput, overtakeSecInput);
+      if (totalSec === null) {
+        return true;
+      }
+      return (
+        totalSec < 1 ||
+        (overtakeSec !== null && totalSec > overtakeSec)
+      );
+    })();
+
+  const isOvertakeAbsoluteInvalid =
+    (overtakeMinInput !== '' || overtakeSecInput !== '') &&
+    (() => {
+      const totalSec = parseMinSec(overtakeMinInput, overtakeSecInput);
+      const boostSec = parseMinSec(boostMinInput, boostSecInput);
+      if (totalSec === null) {
+        return true;
+      }
+      return (
+        (boostSec !== null && totalSec < boostSec) ||
+        totalSec > 300 * 60
+      );
+    })();
+
+  const saveBoostRelative = (valueStr: string) => {
+    const parsed = parseInteger(valueStr);
+    if (parsed === null) {
+      setBoostRelativeInput(String(settings.boostRelativePercent));
+      return;
+    }
+    const clampedBoost = clampValue(parsed, 1, 50);
+    const updates: Partial<UserSettings> = { boostRelativePercent: clampedBoost };
+    if (clampedBoost > settings.overtakeRelativePercent) {
+      updates.overtakeRelativePercent = clampedBoost;
+      setOvertakeRelativeInput(String(clampedBoost));
+    }
+    void updateSettings(updates);
+    setBoostRelativeInput(String(clampedBoost));
+  };
+
+  const saveOvertakeRelative = (valueStr: string) => {
+    const parsed = parseInteger(valueStr);
+    if (parsed === null) {
+      setOvertakeRelativeInput(String(settings.overtakeRelativePercent));
+      return;
+    }
+    const clampedOvertake = clampValue(parsed, 1, 50);
+    const updates: Partial<UserSettings> = { overtakeRelativePercent: clampedOvertake };
+    if (clampedOvertake < settings.boostRelativePercent) {
+      updates.boostRelativePercent = clampedOvertake;
+      setBoostRelativeInput(String(clampedOvertake));
+    }
+    void updateSettings(updates);
+    setOvertakeRelativeInput(String(clampedOvertake));
+  };
+
+  const saveBoostAbsolute = (minStr: string, secStr: string) => {
+    const totalSec = parseMinSec(minStr, secStr);
+    if (totalSec === null) {
+      setBoostMinInput(String(Math.floor(settings.boostAbsoluteSec / 60)));
+      setBoostSecInput(String(settings.boostAbsoluteSec % 60));
+      return;
+    }
+    const clampedBoost = clampValue(totalSec, 1, 300 * 60);
+    const updates: Partial<UserSettings> = { boostAbsoluteSec: clampedBoost };
+    if (clampedBoost > settings.overtakeAbsoluteSec) {
+      updates.overtakeAbsoluteSec = clampedBoost;
+      setOvertakeMinInput(String(Math.floor(clampedBoost / 60)));
+      setOvertakeSecInput(String(clampedBoost % 60));
+    }
+    void updateSettings(updates);
+    setBoostMinInput(String(Math.floor(clampedBoost / 60)));
+    setBoostSecInput(String(clampedBoost % 60));
+  };
+
+  const saveOvertakeAbsolute = (minStr: string, secStr: string) => {
+    const totalSec = parseMinSec(minStr, secStr);
+    if (totalSec === null) {
+      setOvertakeMinInput(String(Math.floor(settings.overtakeAbsoluteSec / 60)));
+      setOvertakeSecInput(String(settings.overtakeAbsoluteSec % 60));
+      return;
+    }
+    const clampedOvertake = clampValue(totalSec, 1, 300 * 60);
+    const updates: Partial<UserSettings> = { overtakeAbsoluteSec: clampedOvertake };
+    if (clampedOvertake < settings.boostAbsoluteSec) {
+      updates.boostAbsoluteSec = clampedOvertake;
+      setBoostMinInput(String(Math.floor(clampedOvertake / 60)));
+      setBoostSecInput(String(clampedOvertake % 60));
+    }
+    void updateSettings(updates);
+    setOvertakeMinInput(String(Math.floor(clampedOvertake / 60)));
+    setOvertakeSecInput(String(clampedOvertake % 60));
   };
 
   const togglePenaltyTrigger = (trigger: PenaltyTrigger) => {
@@ -219,6 +388,183 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
                   />
                   Parc Ferme enabled by default
                 </label>
+              </section>
+
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Boost & Overtake Durations</h3>
+                
+                <div className={styles.tabGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.tabButton} ${
+                      settings.regulationDurationType === 'relative' ? styles.activeTab : ''
+                    }`}
+                    onClick={() => void updateSettings({ regulationDurationType: 'relative' })}
+                  >
+                    Relative (%)
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.tabButton} ${
+                      settings.regulationDurationType === 'absolute' ? styles.activeTab : ''
+                    }`}
+                    onClick={() => void updateSettings({ regulationDurationType: 'absolute' })}
+                  >
+                    Absolute (Min)
+                  </button>
+                </div>
+                
+                <div className={styles.gridTwoColumns}>
+                  {/* Boost Mode Column */}
+                  <div className={styles.gridColumn}>
+                    <span className={styles.fieldLabel}>Boost Mode Duration</span>
+
+                    {settings.regulationDurationType === 'relative' ? (
+                      <>
+                        <div className={styles.numberInputWithUnit}>
+                          <input
+                            className={styles.input}
+                            type="number"
+                            min={1}
+                            max={50}
+                            step={1}
+                            value={boostRelativeInput}
+                            onChange={(e) => setBoostRelativeInput(e.target.value)}
+                            onBlur={() => saveBoostRelative(boostRelativeInput)}
+                            aria-invalid={isBoostRelativeInvalid}
+                          />
+                          <span className={styles.unitLabel}>%</span>
+                        </div>
+                        {isBoostRelativeInvalid ? (
+                          <p className={styles.validationError} role="alert">
+                            Enter a percentage between 1% and the Overtake percentage.
+                          </p>
+                        ) : (
+                          <span className={styles.subLabel}>
+                            Range: 1% to {settings.overtakeRelativePercent}%
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className={styles.durationFieldsRow}>
+                          <div className={styles.numberInputWithUnit}>
+                            <input
+                              className={styles.input}
+                              type="number"
+                              min={0}
+                              max={300}
+                              step={1}
+                              value={boostMinInput}
+                              onChange={(e) => setBoostMinInput(e.target.value)}
+                              onBlur={() => saveBoostAbsolute(boostMinInput, boostSecInput)}
+                              aria-invalid={isBoostAbsoluteInvalid}
+                            />
+                            <span className={styles.unitLabel}>m</span>
+                          </div>
+                          <div className={styles.numberInputWithUnit}>
+                            <input
+                              className={styles.input}
+                              type="number"
+                              min={0}
+                              max={59}
+                              step={1}
+                              value={boostSecInput}
+                              onChange={(e) => setBoostSecInput(e.target.value)}
+                              onBlur={() => saveBoostAbsolute(boostMinInput, boostSecInput)}
+                              aria-invalid={isBoostAbsoluteInvalid}
+                            />
+                            <span className={styles.unitLabel}>s</span>
+                          </div>
+                        </div>
+                        {isBoostAbsoluteInvalid ? (
+                          <p className={styles.validationError} role="alert">
+                            Must be between 1 second and the Overtake duration.
+                          </p>
+                        ) : (
+                          <span className={styles.subLabel}>
+                            Limit: Up to {Math.floor(settings.overtakeAbsoluteSec / 60)}m {settings.overtakeAbsoluteSec % 60}s
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Overtake Mode Column */}
+                  <div className={styles.gridColumn}>
+                    <span className={styles.fieldLabel}>Overtake Mode Duration</span>
+
+                    {settings.regulationDurationType === 'relative' ? (
+                      <>
+                        <div className={styles.numberInputWithUnit}>
+                          <input
+                            className={styles.input}
+                            type="number"
+                            min={1}
+                            max={50}
+                            step={1}
+                            value={overtakeRelativeInput}
+                            onChange={(e) => setOvertakeRelativeInput(e.target.value)}
+                            onBlur={() => saveOvertakeRelative(overtakeRelativeInput)}
+                            aria-invalid={isOvertakeRelativeInvalid}
+                          />
+                          <span className={styles.unitLabel}>%</span>
+                        </div>
+                        {isOvertakeRelativeInvalid ? (
+                          <p className={styles.validationError} role="alert">
+                            Enter a percentage between the Boost percentage and 50%.
+                          </p>
+                        ) : (
+                          <span className={styles.subLabel}>
+                            Range: {settings.boostRelativePercent}% to 50%
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className={styles.durationFieldsRow}>
+                          <div className={styles.numberInputWithUnit}>
+                            <input
+                              className={styles.input}
+                              type="number"
+                              min={0}
+                              max={300}
+                              step={1}
+                              value={overtakeMinInput}
+                              onChange={(e) => setOvertakeMinInput(e.target.value)}
+                              onBlur={() => saveOvertakeAbsolute(overtakeMinInput, overtakeSecInput)}
+                              aria-invalid={isOvertakeAbsoluteInvalid}
+                            />
+                            <span className={styles.unitLabel}>m</span>
+                          </div>
+                          <div className={styles.numberInputWithUnit}>
+                            <input
+                              className={styles.input}
+                              type="number"
+                              min={0}
+                              max={59}
+                              step={1}
+                              value={overtakeSecInput}
+                              onChange={(e) => setOvertakeSecInput(e.target.value)}
+                              onBlur={() => saveOvertakeAbsolute(overtakeMinInput, overtakeSecInput)}
+                              aria-invalid={isOvertakeAbsoluteInvalid}
+                            />
+                            <span className={styles.unitLabel}>s</span>
+                          </div>
+                        </div>
+                        {isOvertakeAbsoluteInvalid ? (
+                          <p className={styles.validationError} role="alert">
+                            Must be between the Boost duration and 300 minutes.
+                          </p>
+                        ) : (
+                          <span className={styles.subLabel}>
+                            Range: {Math.floor(settings.boostAbsoluteSec / 60)}m {settings.boostAbsoluteSec % 60}s to 300m
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
               </section>
 
               <section className={styles.section}>

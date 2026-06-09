@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { season2025 } from '../data/seasons/season2025';
 import { season2026 } from '../data/seasons/season2026';
+import { getSeasonByYear } from '../data/seasons';
+import { useSettingsStore } from '../stores/settingsStore';
 import {
   canActivateRegulation,
   getRegulationState,
@@ -110,12 +112,12 @@ describe('regulationsEngine season interactions', () => {
 
   it('enforces usage limit for overtake', () => {
     const overtakeMaxUses = getConfigMaxUses('overtake', season2026);
-    expect(overtakeMaxUses).toBe(3);
+    expect(overtakeMaxUses).toBe(1);
 
     const session = makeSession({
       usageCounts: {
         boost: 0,
-        overtake: 3,
+        overtake: 1,
         drs: 0,
       },
     });
@@ -134,5 +136,67 @@ describe('regulationsEngine season interactions', () => {
   it('calculates interruption penalties with multiplier', () => {
     expect(calculateInterruptionPenalty(10, 1.5)).toBe(15);
     expect(calculateInterruptionPenalty(20, 3)).toBe(60);
+  });
+
+  it('calculates dynamic durations based on settings and session duration', () => {
+    // 1. Default relative settings (5% boost, 10% overtake)
+    // For a 25 min (1500 sec) session:
+    const season = getSeasonByYear(2026, makeSession({ targetDurationSec: 1500 }));
+    expect(season).toBeDefined();
+
+    const boost = season!.regulations.find((r) => r.type === 'boost');
+    const overtake = season!.regulations.find((r) => r.type === 'overtake');
+
+    expect(boost).toBeDefined();
+    expect(overtake).toBeDefined();
+
+    expect(boost!.durationSec).toBe(75); // 5% of 1500
+    expect(boost!.cooldownSec).toBe(75); // cooldown matches duration
+    expect(boost!.maxUsesPerSession).toBe(3);
+
+    expect(overtake!.durationSec).toBe(150); // 10% of 1500
+    expect(overtake!.maxUsesPerSession).toBe(1);
+
+    // 2. Different session duration (e.g. 60 min = 3600 sec)
+    const longSessionSeason = getSeasonByYear(2026, makeSession({ targetDurationSec: 3600 }));
+    const longBoost = longSessionSeason!.regulations.find((r) => r.type === 'boost');
+    const longOvertake = longSessionSeason!.regulations.find((r) => r.type === 'overtake');
+    expect(longBoost!.durationSec).toBe(180); // 5% of 3600
+    expect(longOvertake!.durationSec).toBe(360); // 10% of 3600
+  });
+
+  it('applies safety clamp if boost duration exceeds overtake duration', () => {
+    const settings = useSettingsStore.getState().settings;
+
+    // Temporarily set boost relative to 30% and overtake relative to 20%
+    // This violates boost <= overtake, simulating mixed or invalid settings
+    const originalBoostRel = settings.boostRelativePercent;
+    const originalOvertakeRel = settings.overtakeRelativePercent;
+
+    useSettingsStore.setState({
+      settings: {
+        ...settings,
+        boostRelativePercent: 30,
+        overtakeRelativePercent: 20,
+      },
+    });
+
+    const season = getSeasonByYear(2026, makeSession({ targetDurationSec: 1000 }));
+    const boost = season!.regulations.find((r) => r.type === 'boost');
+    const overtake = season!.regulations.find((r) => r.type === 'overtake');
+
+    // Boost should be clamped to overtake duration (200 sec)
+    expect(overtake!.durationSec).toBe(200);
+    expect(boost!.durationSec).toBe(200);
+    expect(boost!.cooldownSec).toBe(200);
+
+    // Restore settings
+    useSettingsStore.setState({
+      settings: {
+        ...settings,
+        boostRelativePercent: originalBoostRel,
+        overtakeRelativePercent: originalOvertakeRel,
+      },
+    });
   });
 });

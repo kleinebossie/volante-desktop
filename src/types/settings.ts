@@ -19,6 +19,13 @@ export interface UserSettings {
   // UI
   showLapCounter: boolean;
   showPenaltyFeed: boolean;
+
+  // Regulation Durations
+  regulationDurationType: 'relative' | 'absolute';
+  boostRelativePercent: number;
+  boostAbsoluteSec: number;
+  overtakeRelativePercent: number;
+  overtakeAbsoluteSec: number;
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -31,4 +38,10 @@ export const DEFAULT_SETTINGS: UserSettings = {
   soundEnabled: true,
   showLapCounter: true,
   showPenaltyFeed: true,
+  regulationDurationType: 'relative',
+  boostRelativePercent: 5,
+  boostAbsoluteSec: 120,
+  overtakeRelativePercent: 10,
+  overtakeAbsoluteSec: 240,
 };
+
