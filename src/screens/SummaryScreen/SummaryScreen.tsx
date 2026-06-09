@@ -61,7 +61,7 @@ export function SummaryScreen() {
       ? session
       : null;
   const track = finalizedSession ? getTrackById(finalizedSession.selectedTrackId) : undefined;
-  const ruleset = finalizedSession ? getSeasonByYear(finalizedSession.seasonYear) : undefined;
+  const ruleset = finalizedSession ? getSeasonByYear(finalizedSession.seasonYear, finalizedSession) : undefined;
 
   useEffect(() => {
     if (!finalizedSession) return;

@@ -216,4 +216,87 @@
   .favoriteTracksGrid {
     grid-template-columns: 1fr;
   }
+
+  .gridTwoColumns {
+    grid-template-columns: 1fr;
+  }
 }
+
+.gridTwoColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.gridColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tabGroup {
+  display: flex;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.tabButton {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  text-align: center;
+}
+
+.tabButton:hover {
+  color: var(--color-text-primary);
+}
+
+.activeTab {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-accent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.durationFieldsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.numberInputWithUnit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.numberInputWithUnit input {
+  padding-right: 28px;
+}
+
+.unitLabel {
+  position: absolute;
+  right: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.subLabel {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  margin-top: -2px;
+}
+

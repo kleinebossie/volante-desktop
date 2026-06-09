@@ -75,7 +75,7 @@ export function usePenaltyDetection(): void {
       if (!isPenaltyEnabled(trigger, session.enabledPenaltyTriggers)) return;
 
       // Get season ruleset for penalty amounts
-      const ruleset = getSeasonByYear(session.seasonYear);
+      const ruleset = getSeasonByYear(session.seasonYear, session);
       if (!ruleset) return;
 
       // Calculate the base penalty amount
