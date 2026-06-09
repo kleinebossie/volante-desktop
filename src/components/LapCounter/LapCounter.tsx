@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import styles from './LapCounter.module.css';
 
 interface LapCounterProps {
@@ -5,7 +6,10 @@ interface LapCounterProps {
   totalLaps: number;
 }
 
-export function LapCounter({ currentLap, totalLaps }: LapCounterProps) {
+export const LapCounter = memo(function LapCounter({
+  currentLap,
+  totalLaps,
+}: LapCounterProps) {
   return (
     <div className={styles.container}>
       <span className={styles.label}>Lap</span>
@@ -14,4 +18,4 @@ export function LapCounter({ currentLap, totalLaps }: LapCounterProps) {
       </span>
     </div>
   );
-}
+});
