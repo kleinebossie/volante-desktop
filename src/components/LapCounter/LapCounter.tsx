@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import styles from './LapCounter.module.css';
 
 interface LapCounterProps {
@@ -5,7 +6,9 @@ interface LapCounterProps {
   totalLaps: number;
 }
 
-export function LapCounter({ currentLap, totalLaps }: LapCounterProps) {
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary ~60fps re-renders from RaceScreen
+// since laps only update occasionally during a session.
+export const LapCounter = memo(function LapCounter({ currentLap, totalLaps }: LapCounterProps) {
   return (
     <div className={styles.container}>
       <span className={styles.label}>Lap</span>
@@ -14,4 +17,4 @@ export function LapCounter({ currentLap, totalLaps }: LapCounterProps) {
       </span>
     </div>
   );
-}
+});

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { SessionEvent } from '../../types/session';
 import styles from './PenaltyIndicator.module.css';
 
@@ -28,7 +29,9 @@ function formatPenaltyEvent(event: SessionEvent): { id: string; text: string } |
   return null;
 }
 
-export function PenaltyIndicator({ events, maxItems = 3 }: PenaltyIndicatorProps) {
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary ~60fps re-renders from RaceScreen.
+// The `events` array reference only changes when new events are added to the session.
+export const PenaltyIndicator = memo(function PenaltyIndicator({ events, maxItems = 3 }: PenaltyIndicatorProps) {
   const items = events
     .map(formatPenaltyEvent)
     .filter((item): item is { id: string; text: string } => item !== null)
@@ -51,4 +54,4 @@ export function PenaltyIndicator({ events, maxItems = 3 }: PenaltyIndicatorProps
       </ul>
     </div>
   );
-}
+});

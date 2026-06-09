@@ -1,0 +1,3 @@
+## 2026-06-09 - Memoization in fast-updating container
+**Learning:** React.memo is extremely powerful when dealing with a high-frequency render loop. In `RaceScreen`, the container re-renders 60fps due to animation timers, causing pure presentation children to re-render constantly. Using a custom comparator to floor a fractional value (`Timer`) can reduce re-renders from 60fps to 1fps while maintaining visual accuracy.
+**Action:** Always look for static or slow-updating child components inside requestAnimationFrame or fast-interval containers, and apply memoization to break the render cascade.
