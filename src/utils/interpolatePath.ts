@@ -61,47 +61,57 @@ export interface TrackPoint {
  * // → { x: 250, y: 123, angle: 45 }
  * ```
  */
+// Cache points for each path element to avoid calling getPointAtLength
+// on every frame.
+const pointCache = new WeakMap<SVGPathElement, TrackPoint[]>();
+const CACHE_RESOLUTION = 1000;
+
 export function getPointAtProgress(
   pathElement: SVGPathElement,
   progress: number
 ): TrackPoint {
-  const totalLength = pathElement.getTotalLength();
+  let cache = pointCache.get(pathElement);
+
+  if (!cache) {
+    cache = [];
+    const totalLength = pathElement.getTotalLength();
+    const LOOK_AHEAD = 2;
+
+    for (let i = 0; i <= CACHE_RESOLUTION; i++) {
+      const p = i / CACHE_RESOLUTION;
+      const distance = p * totalLength;
+
+      const point = pathElement.getPointAtLength(distance);
+
+      const aheadDistance = Math.min(distance + LOOK_AHEAD, totalLength);
+      const behindDistance = Math.max(distance - LOOK_AHEAD, 0);
+
+      let angle: number;
+
+      if (aheadDistance > distance) {
+        const nextPoint = pathElement.getPointAtLength(aheadDistance);
+        angle =
+          Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x) *
+          (180 / Math.PI);
+      } else {
+        const prevPoint = pathElement.getPointAtLength(behindDistance);
+        angle =
+          Math.atan2(point.y - prevPoint.y, point.x - prevPoint.x) *
+          (180 / Math.PI);
+      }
+
+      cache.push({ x: point.x, y: point.y, angle });
+    }
+
+    pointCache.set(pathElement, cache);
+  }
 
   // Clamp progress to [0, 1] just in case
   const clampedProgress = Math.max(0, Math.min(1, progress));
-  const distance = clampedProgress * totalLength;
 
-  // Get the (x, y) position at this distance along the path
-  const point = pathElement.getPointAtLength(distance);
-
-  // Get a second point slightly ahead to calculate the direction angle.
-  // We use a small offset (2 SVG units) to get a reasonable direction.
-  // If we're near the end, we look backwards instead.
-  const LOOK_AHEAD = 2;
-  const aheadDistance = Math.min(distance + LOOK_AHEAD, totalLength);
-  const behindDistance = Math.max(distance - LOOK_AHEAD, 0);
-
-  let angle: number;
-
-  if (aheadDistance > distance) {
-    // Normal case: look ahead
-    const nextPoint = pathElement.getPointAtLength(aheadDistance);
-    angle =
-      Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x) *
-      (180 / Math.PI);
-  } else {
-    // Near the end: look behind and reverse the angle
-    const prevPoint = pathElement.getPointAtLength(behindDistance);
-    angle =
-      Math.atan2(point.y - prevPoint.y, point.x - prevPoint.x) *
-      (180 / Math.PI);
-  }
-
-  return {
-    x: point.x,
-    y: point.y,
-    angle,
-  };
+  // Find the nearest precomputed point
+  const index = Math.round(clampedProgress * CACHE_RESOLUTION);
+  return cache[index];
 }
 
 // ---------------------------------------------------------------------------
