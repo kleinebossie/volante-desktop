@@ -129,8 +129,9 @@ export function SetupScreen() {
           />
 
           <div className={styles.seasonPicker}>
-            <label className={styles.label}>Season</label>
+            <label className={styles.label} htmlFor="season-select">Season</label>
             <select 
+              id="season-select"
               className={styles.select}
               value={seasonYear}
               onChange={(e) => setSeasonYear(Number(e.target.value))}
