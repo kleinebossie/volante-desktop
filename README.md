@@ -115,10 +115,6 @@ Contributions are welcome! Whether it's bug reports, feature ideas, code, or doc
 - 💬 [Join the discussion](https://github.com/kleinebossie/volante-desktop/discussions)
 - 🏷️ Check out [`good first issue`](https://github.com/kleinebossie/volante-desktop/labels/good%20first%20issue) for easy ways to get started
 
-## 📋 Roadmap
-
-See the [Roadmap](ROADMAP.md) for planned features and releases.
-
 ## 🙏 Credits
 
 - **Track SVG data**: [julesr0y/f1-circuits-svg](https://github.com/julesr0y/f1-circuits-svg) by Jules Roy — licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)
