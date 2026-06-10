@@ -38,12 +38,12 @@ describe('usePenaltyDetection hook', () => {
     };
 
     // Capture the callbacks provided by the hook so we can trigger penalties manually
-    vi.mocked(createIdleDetector).mockImplementation((threshold, callback) => {
+    vi.mocked(createIdleDetector).mockImplementation((_threshold, callback) => {
       idleCallback = callback;
       return mockIdleDetector;
     });
 
-    vi.mocked(createUnfocusDetector).mockImplementation((gracePeriod, callback) => {
+    vi.mocked(createUnfocusDetector).mockImplementation((_gracePeriod, callback) => {
       unfocusCallback = callback;
       return mockUnfocusDetector;
     });
