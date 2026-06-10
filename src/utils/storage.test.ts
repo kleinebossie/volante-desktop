@@ -23,6 +23,42 @@ describe('storage.ts', () => {
   });
 
   describe('readData', () => {
+    it('blocks path traversal attempts with ..', async () => {
+      const result = await readData('../secret.json');
+
+      expect(exists).not.toHaveBeenCalled();
+      expect(readTextFile).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[storage] Failed to read "../secret.json":',
+        expect.any(Error)
+      );
+      expect(result).toBeNull();
+    });
+
+    it('blocks path traversal attempts with /', async () => {
+      const result = await readData('/etc/passwd');
+
+      expect(exists).not.toHaveBeenCalled();
+      expect(readTextFile).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[storage] Failed to read "/etc/passwd":',
+        expect.any(Error)
+      );
+      expect(result).toBeNull();
+    });
+
+    it('blocks path traversal attempts with \\', async () => {
+      const result = await readData('C:\\Windows\\System32\\config\\SAM');
+
+      expect(exists).not.toHaveBeenCalled();
+      expect(readTextFile).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[storage] Failed to read "C:\\Windows\\System32\\config\\SAM":',
+        expect.any(Error)
+      );
+      expect(result).toBeNull();
+    });
+
     it('returns parsed JSON when file exists and is readable', async () => {
       vi.mocked(exists).mockResolvedValue(true);
       vi.mocked(readTextFile).mockResolvedValue('{"test":"data"}');
@@ -56,6 +92,17 @@ describe('storage.ts', () => {
   });
 
   describe('writeData', () => {
+    it('blocks path traversal attempts', async () => {
+      await writeData('../test.json', { test: 'data' });
+
+      expect(mkdir).not.toHaveBeenCalled();
+      expect(writeTextFile).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[storage] Failed to write "../test.json":',
+        expect.any(Error)
+      );
+    });
+
     it('writes formatted JSON to the file', async () => {
       vi.mocked(mkdir).mockResolvedValue(undefined);
       vi.mocked(writeTextFile).mockResolvedValue(undefined);
