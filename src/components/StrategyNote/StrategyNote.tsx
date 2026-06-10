@@ -81,9 +81,10 @@ export function StrategyNote({
 
   return (
     <div className={styles.container}>
-      <label className={styles.label}>Strategy Note</label>
+      <label className={styles.label} htmlFor="strategy-note-input">Strategy Note</label>
       <div className={styles.inputContainer}>
         <input
+          id="strategy-note-input"
           type="text"
           className={styles.input}
           placeholder="Type a focus point and press Enter"
@@ -110,6 +111,7 @@ export function StrategyNote({
                   <input
                     type="text"
                     className={styles.strategyEditInput}
+                    aria-label="Edit strategy note text"
                     value={editingDraft}
                     onChange={(e) => setEditingDraft(e.target.value)}
                     maxLength={50}

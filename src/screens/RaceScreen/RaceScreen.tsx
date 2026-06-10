@@ -334,6 +334,7 @@ export function RaceScreen() {
                       <input
                         type="text"
                         className={styles.strategyEditInput}
+                        aria-label="Edit strategy note text"
                         value={editingStrategyDraft}
                         onChange={(event) => setEditingStrategyDraft(event.target.value)}
                         maxLength={50}
@@ -404,6 +405,7 @@ export function RaceScreen() {
                 type="text"
                 className={styles.strategyInput}
                 placeholder="Add note and press Enter"
+                aria-label="Add strategy note"
                 value={strategyDraftNote}
                 onChange={(event) => setStrategyDraftNote(event.target.value)}
                 maxLength={50}
