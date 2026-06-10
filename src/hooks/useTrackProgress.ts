@@ -18,6 +18,7 @@
 
 import { useMemo } from 'react';
 import { getPointAtProgress, type TrackPoint } from '../utils/interpolatePath';
+import { useSessionStore } from '../stores/sessionStore';
 
 /**
  * Default position when the path isn't available yet (e.g., before first render).
@@ -76,4 +77,11 @@ export function useTrackProgress(
   }, [pathRef, lapProgress]);
 
   return point;
+}
+
+/**
+ * Hook to select track progress data from the session store.
+ */
+export function useTrackProgressData() {
+  return useSessionStore((s) => s.session?.effectiveProgressSec ?? 0);
 }
