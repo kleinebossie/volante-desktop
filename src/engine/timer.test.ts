@@ -13,7 +13,7 @@ describe('createTimer', () => {
     return rafIdCounter;
   });
 
-  const cafMock = vi.fn((id: number) => {
+  const cafMock = vi.fn((_id: number) => {
     // Simply clear callbacks or record call
   });
 
