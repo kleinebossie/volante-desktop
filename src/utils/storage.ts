@@ -20,6 +20,19 @@ import { BaseDirectory } from '@tauri-apps/api/path';
  */
 
 /**
+ * Validates a filename to prevent path traversal attacks.
+ * Filenames must be simple strings without slashes or parent directory references.
+ *
+ * @param filename - e.g., "settings.json"
+ * @throws Error if the filename is invalid
+ */
+function validateFilename(filename: string): void {
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    throw new Error(`Invalid filename: Path traversal detected "${filename}"`);
+  }
+}
+
+/**
  * Reads a JSON file from the Tauri app data directory.
  *
  * @param filename - e.g., "settings.json"
@@ -27,6 +40,7 @@ import { BaseDirectory } from '@tauri-apps/api/path';
  */
 export async function readData<T>(filename: string): Promise<T | null> {
   try {
+    validateFilename(filename);
     const fileExists = await exists(filename, { baseDir: BaseDirectory.AppData });
     if (!fileExists) {
       return null;
@@ -48,6 +62,7 @@ export async function readData<T>(filename: string): Promise<T | null> {
  */
 export async function writeData<T>(filename: string, data: T): Promise<void> {
   try {
+    validateFilename(filename);
     // Ensure the app data directory exists before writing.
     // mkdir with recursive:true is safe to call even if the dir already exists.
     await mkdir('', { recursive: true, baseDir: BaseDirectory.AppData });
