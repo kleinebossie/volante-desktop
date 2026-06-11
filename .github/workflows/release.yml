@@ -27,7 +27,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -50,7 +50,24 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Volante ${{ github.ref_name }}"
-          releaseBody: "See the assets to download this version and install."
+          releaseBody: |
+            ## 🏎️ Volante ${{ github.ref_name }}
+
+            > ⚠️ **Alpha Release** — This is an early release for testing and feedback.
+            > The app is primarily tested on Ubuntu 24.04. macOS and Windows builds are
+            > untested and may have issues.
+
+            ### Downloads
+            See the assets below for your platform:
+            - **Linux**: `.deb` (Debian/Ubuntu) or `.AppImage` (universal)
+            - **macOS**: `.dmg` (aarch64 for Apple Silicon, x86_64 for Intel)
+            - **Windows**: `.msi` installer
+
+            ### What's New
+            See the [CHANGELOG](https://github.com/kleinebossie/volante-desktop/blob/main/CHANGELOG.md) for details.
+
+            ### Found a bug?
+            Please [open an issue](https://github.com/kleinebossie/volante-desktop/issues/new?template=bug_report.md) with your OS, app version, and steps to reproduce.
           releaseDraft: true
-          prerelease: false
+          prerelease: true
           args: ${{ matrix.args }}

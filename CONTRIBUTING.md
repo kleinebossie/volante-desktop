@@ -14,7 +14,7 @@ Thank you for considering contributing to Volante! 🏎️ Whether it's a bug re
 
 ## Code of Conduct
 
-This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold this code. Please report unacceptable behavior to [joe.bos@hotmail.com](mailto:joe.bos@hotmail.com).
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold this code. Please report unacceptable behavior to [77066760+kleinebossie@users.noreply.github.com](mailto:77066760+kleinebossie@users.noreply.github.com).
 
 ## How Can I Contribute?
 
