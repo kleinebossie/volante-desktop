@@ -391,7 +391,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
               </section>
 
               <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Boost & Overtake Durations</h3>
+                <h3 className={styles.sectionTitle}>Boost/DRS & Overtake Durations</h3>
                 
                 <div className={styles.tabGroup}>
                   <button
@@ -417,7 +417,7 @@ export function SettingsScreen({ isOpen, onClose }: SettingsScreenProps) {
                 <div className={styles.gridTwoColumns}>
                   {/* Boost Mode Column */}
                   <div className={styles.gridColumn}>
-                    <span className={styles.fieldLabel}>Boost Mode Duration</span>
+                    <span className={styles.fieldLabel}>Boost/DRS Duration</span>
 
                     {settings.regulationDurationType === 'relative' ? (
                       <>

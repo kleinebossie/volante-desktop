@@ -24,7 +24,7 @@ Pick a real F1 track. Start a race. A car drives around the circuit for the dura
 | ------------------------------- | -------------------------------------------------------------------------------------- |
 | 🏁 **24 Real F1 Circuits**      | Every track on the 2026 calendar — Bahrain, Monaco, Silverstone, Spa, and more         |
 | 🚗 **Live Track Visualization** | Your car physically drives around the accurate SVG map of the circuit                  |
-| ⚡ **Race Regulations**         | Boost (2x pace), Overtake (2.5x pace), and DRS (1.5x pace) — with cooldowns and limits |
+| ⚡ **Race Regulations**         | Boost/DRS (1.25x pace) and Overtake (1.5x pace) — with cooldowns and limits |
 | 🚨 **Penalty System**           | Pausing, alt-tabbing, or going idle triggers steward penalties that cost you time      |
 | 📝 **Strategy Notes**           | Write your focus plan with optional Parc Fermé lock                                    |
 | 📊 **Session History**          | Every completed race is saved with full stats and penalty timeline                     |

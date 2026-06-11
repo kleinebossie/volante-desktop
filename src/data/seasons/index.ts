@@ -21,14 +21,14 @@ export function getSeasonByYear(year: number, session?: Session): SeasonRuleset 
     let cooldownSec = reg.cooldownSec;
     let maxUsesPerSession = reg.maxUsesPerSession;
 
-    if (reg.type === 'boost') {
+    if (reg.type === 'boost' || reg.type === 'drs') {
       maxUsesPerSession = 3;
       if (settings.regulationDurationType === 'relative') {
         durationSec = Math.round((settings.boostRelativePercent / 100) * sessionDurationSec);
       } else {
         durationSec = settings.boostAbsoluteSec;
       }
-      cooldownSec = durationSec; // Cooldown same duration as boost duration
+      cooldownSec = durationSec; // Cooldown same duration as boost/drs duration
     } else if (reg.type === 'overtake') {
       maxUsesPerSession = 1;
       if (settings.regulationDurationType === 'relative') {
@@ -46,8 +46,8 @@ export function getSeasonByYear(year: number, session?: Session): SeasonRuleset 
     };
   });
 
-  // Safety clamp: Boost duration must not exceed Overtake duration if both are present
-  const boostReg = regulations.find((r) => r.type === 'boost');
+  // Safety clamp: Boost/DRS duration must not exceed Overtake duration if both are present
+  const boostReg = regulations.find((r) => r.type === 'boost' || r.type === 'drs');
   const overtakeReg = regulations.find((r) => r.type === 'overtake');
   if (boostReg && overtakeReg && boostReg.durationSec > overtakeReg.durationSec) {
     boostReg.durationSec = overtakeReg.durationSec;

@@ -139,23 +139,40 @@ describe('regulationsEngine season interactions', () => {
   });
 
   it('calculates dynamic durations based on settings and session duration', () => {
-    // 1. Default relative settings (5% boost, 10% overtake)
-    // For a 25 min (1500 sec) session:
-    const season = getSeasonByYear(2026, makeSession({ targetDurationSec: 1500 }));
-    expect(season).toBeDefined();
+    // 1. Default relative settings (5% boost/drs, 10% overtake)
+    // For a 25 min (1500 sec) session - 2026 Season (Boost):
+    const season2026Obj = getSeasonByYear(2026, makeSession({ targetDurationSec: 1500 }));
+    expect(season2026Obj).toBeDefined();
 
-    const boost = season!.regulations.find((r) => r.type === 'boost');
-    const overtake = season!.regulations.find((r) => r.type === 'overtake');
+    const boost = season2026Obj!.regulations.find((r) => r.type === 'boost');
+    const overtake26 = season2026Obj!.regulations.find((r) => r.type === 'overtake');
 
     expect(boost).toBeDefined();
-    expect(overtake).toBeDefined();
+    expect(overtake26).toBeDefined();
 
     expect(boost!.durationSec).toBe(75); // 5% of 1500
     expect(boost!.cooldownSec).toBe(75); // cooldown matches duration
     expect(boost!.maxUsesPerSession).toBe(3);
 
-    expect(overtake!.durationSec).toBe(150); // 10% of 1500
-    expect(overtake!.maxUsesPerSession).toBe(1);
+    expect(overtake26!.durationSec).toBe(150); // 10% of 1500
+    expect(overtake26!.maxUsesPerSession).toBe(1);
+
+    // 2025 Season (DRS):
+    const season2025Obj = getSeasonByYear(2025, makeSession({ targetDurationSec: 1500, seasonYear: 2025 }));
+    expect(season2025Obj).toBeDefined();
+
+    const drs = season2025Obj!.regulations.find((r) => r.type === 'drs');
+    const overtake25 = season2025Obj!.regulations.find((r) => r.type === 'overtake');
+
+    expect(drs).toBeDefined();
+    expect(overtake25).toBeDefined();
+
+    expect(drs!.durationSec).toBe(75); // 5% of 1500 (matches boost duration settings)
+    expect(drs!.cooldownSec).toBe(75); // cooldown matches duration
+    expect(drs!.maxUsesPerSession).toBe(3);
+
+    expect(overtake25!.durationSec).toBe(150); // 10% of 1500
+    expect(overtake25!.maxUsesPerSession).toBe(1);
 
     // 2. Different session duration (e.g. 60 min = 3600 sec)
     const longSessionSeason = getSeasonByYear(2026, makeSession({ targetDurationSec: 3600 }));
@@ -165,7 +182,7 @@ describe('regulationsEngine season interactions', () => {
     expect(longOvertake!.durationSec).toBe(360); // 10% of 3600
   });
 
-  it('applies safety clamp if boost duration exceeds overtake duration', () => {
+  it('applies safety clamp if boost/drs duration exceeds overtake duration', () => {
     const settings = useSettingsStore.getState().settings;
 
     // Temporarily set boost relative to 30% and overtake relative to 20%
@@ -181,14 +198,25 @@ describe('regulationsEngine season interactions', () => {
       },
     });
 
-    const season = getSeasonByYear(2026, makeSession({ targetDurationSec: 1000 }));
-    const boost = season!.regulations.find((r) => r.type === 'boost');
-    const overtake = season!.regulations.find((r) => r.type === 'overtake');
+    // Verify 2026 (Boost)
+    const season26 = getSeasonByYear(2026, makeSession({ targetDurationSec: 1000 }));
+    const boost = season26!.regulations.find((r) => r.type === 'boost');
+    const overtake26 = season26!.regulations.find((r) => r.type === 'overtake');
 
     // Boost should be clamped to overtake duration (200 sec)
-    expect(overtake!.durationSec).toBe(200);
+    expect(overtake26!.durationSec).toBe(200);
     expect(boost!.durationSec).toBe(200);
     expect(boost!.cooldownSec).toBe(200);
+
+    // Verify 2025 (DRS)
+    const season25 = getSeasonByYear(2025, makeSession({ targetDurationSec: 1000, seasonYear: 2025 }));
+    const drs = season25!.regulations.find((r) => r.type === 'drs');
+    const overtake25 = season25!.regulations.find((r) => r.type === 'overtake');
+
+    // DRS should be clamped to overtake duration (200 sec)
+    expect(overtake25!.durationSec).toBe(200);
+    expect(drs!.durationSec).toBe(200);
+    expect(drs!.cooldownSec).toBe(200);
 
     // Restore settings
     useSettingsStore.setState({
