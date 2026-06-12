@@ -22,12 +22,13 @@ import { BaseDirectory } from '@tauri-apps/api/path';
 /**
  * Validates a filename to prevent path traversal attacks.
  * Filenames must be simple strings without slashes or parent directory references.
+ * Only alphanumeric characters, hyphens, underscores, and exactly one .json extension are allowed.
  *
  * @param filename - e.g., "settings.json"
  * @throws Error if the filename is invalid
  */
 function validateFilename(filename: string): void {
-  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+  if (!/^[a-zA-Z0-9_-]+\.json$/.test(filename)) {
     throw new Error(`Invalid filename: Path traversal detected "${filename}"`);
   }
 }
