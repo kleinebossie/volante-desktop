@@ -7,3 +7,8 @@
 **Vulnerability:** The Content Security Policy (CSP) lacked a `script-src` directive, falling back to `default-src 'self'`. While `default-src 'self'` provides baseline protection, explicitly setting `script-src 'self'` ensures strict control over script execution sources and adds defense-in-depth against XSS.
 **Learning:** Always define `script-src` explicitly in CSP configurations, even if `default-src` seems restrictive enough.
 **Prevention:** In Tauri configurations (`tauri.conf.json`) and standard web environments, explicitly list `script-src` within the CSP.
+
+## 2025-06-14 - Throttle DOM Event Handlers for Client-Side DoS Prevention
+**Vulnerability:** High-frequency DOM events (like `mousemove`) were triggering penalty detector countdown resets directly without throttling.
+**Learning:** Attaching complex logic or even simple timeout resets to unthrottled, high-frequency DOM events can lead to high CPU/battery drain and potentially client-side Denial of Service (DoS).
+**Prevention:** Throttle DOM event handlers, especially for continuous events like `mousemove` and `scroll`, to execute at most every 500ms or appropriate interval.

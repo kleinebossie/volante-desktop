@@ -131,10 +131,19 @@ export function createIdleDetector(
   let timerId: ReturnType<typeof setTimeout> | null = null;
   let isRunning = false;
   let listenersAttached = false;
+  let lastActivityTime = 0;
 
   // Reset the idle countdown — called on every user interaction
-  const resetTimer = () => {
+  const resetTimer = (isAutoRepeat = false) => {
     if (!isRunning) return;
+
+    const now = Date.now();
+    // Security: Throttle DOM event handling to prevent client-side DoS
+    // Only throttle user interactions, not auto-repeat timers
+    if (!isAutoRepeat && now - lastActivityTime < 500) {
+      return;
+    }
+    lastActivityTime = now;
 
     // Clear existing countdown
     if (timerId !== null) {
@@ -146,10 +155,12 @@ export function createIdleDetector(
       if (isRunning) {
         onIdle('idle');
         // Keep repeating — if the user stays idle, fire again
-        resetTimer();
+        resetTimer(true);
       }
     }, idleThresholdMs);
   };
+
+  const handleInteraction = () => resetTimer(false);
 
   // The activity events we listen for
   const activityEvents: Array<keyof DocumentEventMap> = [
@@ -162,7 +173,7 @@ export function createIdleDetector(
   const addListeners = () => {
     if (listenersAttached) return;
     for (const event of activityEvents) {
-      document.addEventListener(event, resetTimer, { passive: true });
+      document.addEventListener(event, handleInteraction, { passive: true });
     }
     listenersAttached = true;
   };
@@ -171,7 +182,7 @@ export function createIdleDetector(
   const removeListeners = () => {
     if (!listenersAttached) return;
     for (const event of activityEvents) {
-      document.removeEventListener(event, resetTimer);
+      document.removeEventListener(event, handleInteraction);
     }
     listenersAttached = false;
   };
@@ -181,7 +192,7 @@ export function createIdleDetector(
       if (isRunning) return;
       isRunning = true;
       addListeners();
-      resetTimer(); // Start the first countdown
+      resetTimer(false); // Start the first countdown
     },
     stop() {
       isRunning = false;
