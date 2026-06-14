@@ -131,6 +131,7 @@ export function createIdleDetector(
   let timerId: ReturnType<typeof setTimeout> | null = null;
   let isRunning = false;
   let listenersAttached = false;
+  let lastActivityTime = 0;
 
   // Reset the idle countdown — called on every user interaction
   const resetTimer = () => {
@@ -151,6 +152,16 @@ export function createIdleDetector(
     }, idleThresholdMs);
   };
 
+  // Throttled handler to prevent DoS from high-frequency events like mousemove
+  const handleActivity = () => {
+    const now = Date.now();
+    // Throttle events to at most once every 500ms
+    if (now - lastActivityTime > 500) {
+      lastActivityTime = now;
+      resetTimer();
+    }
+  };
+
   // The activity events we listen for
   const activityEvents: Array<keyof DocumentEventMap> = [
     'mousemove',
@@ -162,7 +173,7 @@ export function createIdleDetector(
   const addListeners = () => {
     if (listenersAttached) return;
     for (const event of activityEvents) {
-      document.addEventListener(event, resetTimer, { passive: true });
+      document.addEventListener(event, handleActivity, { passive: true });
     }
     listenersAttached = true;
   };
@@ -171,7 +182,7 @@ export function createIdleDetector(
   const removeListeners = () => {
     if (!listenersAttached) return;
     for (const event of activityEvents) {
-      document.removeEventListener(event, resetTimer);
+      document.removeEventListener(event, handleActivity);
     }
     listenersAttached = false;
   };
