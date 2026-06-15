@@ -29,11 +29,15 @@ function formatPenaltyEvent(event: SessionEvent): { id: string; text: string } |
 }
 
 export function PenaltyIndicator({ events, maxItems = 3 }: PenaltyIndicatorProps) {
-  const items = events
-    .map(formatPenaltyEvent)
-    .filter((item): item is { id: string; text: string } => item !== null)
-    .slice(-maxItems)
-    .reverse();
+  const items: { id: string; text: string }[] = [];
+
+  // Iterate backwards to get the most recent penalty events without mapping the whole array.
+  for (let i = events.length - 1; i >= 0 && items.length < maxItems; i--) {
+    const formatted = formatPenaltyEvent(events[i]);
+    if (formatted) {
+      items.push(formatted);
+    }
+  }
 
   if (items.length === 0) {
     return null;
