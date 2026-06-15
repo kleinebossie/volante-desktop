@@ -1,3 +1,3 @@
-## 2024-06-10 - React Performance
-**Learning:** React re-renders components continuously if connected to high-frequency state updates like a timer or track progress. The 60 FPS update causes parent components (like `RaceScreen`) to re-render, subsequently cascading into children.
-**Action:** Use `React.memo` on small, static presentation components (`Timer`, `LapCounter`) to prevent them from re-rendering unless their specific props change, significantly reducing unnecessary render work for 60fps loops.
+## 2024-06-15 - [Avoid O(N) Array Ops in 60FPS Render Paths]
+**Learning:** Chained array methods like `.map().filter().slice().reverse()` in React components (`PenaltyIndicator`) are extremely inefficient when subjected to 60FPS render cycles (e.g., from parent game-loop state changes), as they iterate the entire array multiple times and allocate intermediate arrays each frame. Shallow `React.memo` will not prevent this if the props (like `events` array or inline functions) break referential equality constantly.
+**Action:** Replace full-array mapping/filtering chains with targeted O(1) or O(K) `for` loops (e.g. iterating backward and early-exiting once `maxItems` is reached) for display components receiving high-frequency updates where full memoization is difficult.
