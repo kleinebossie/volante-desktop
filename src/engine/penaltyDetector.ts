@@ -134,16 +134,8 @@ export function createIdleDetector(
   let lastActivityTime = 0;
 
   // Reset the idle countdown — called on every user interaction
-  const resetTimer = (isAutoRepeat = false) => {
+  const resetTimer = () => {
     if (!isRunning) return;
-
-    const now = Date.now();
-    // Security: Throttle DOM event handling to prevent client-side DoS
-    // Only throttle user interactions, not auto-repeat timers
-    if (!isAutoRepeat && now - lastActivityTime < 500) {
-      return;
-    }
-    lastActivityTime = now;
 
     // Clear existing countdown
     if (timerId !== null) {
@@ -155,12 +147,20 @@ export function createIdleDetector(
       if (isRunning) {
         onIdle('idle');
         // Keep repeating — if the user stays idle, fire again
-        resetTimer(true);
+        resetTimer();
       }
     }, idleThresholdMs);
   };
 
-  const handleInteraction = () => resetTimer(false);
+  // Throttled handler to prevent DoS from high-frequency events like mousemove
+  const handleActivity = () => {
+    const now = Date.now();
+    // Throttle events to at most once every 500ms
+    if (now - lastActivityTime > 500) {
+      lastActivityTime = now;
+      resetTimer();
+    }
+  };
 
   // The activity events we listen for
   const activityEvents: Array<keyof DocumentEventMap> = [
@@ -173,7 +173,7 @@ export function createIdleDetector(
   const addListeners = () => {
     if (listenersAttached) return;
     for (const event of activityEvents) {
-      document.addEventListener(event, handleInteraction, { passive: true });
+      document.addEventListener(event, handleActivity, { passive: true });
     }
     listenersAttached = true;
   };
@@ -182,7 +182,7 @@ export function createIdleDetector(
   const removeListeners = () => {
     if (!listenersAttached) return;
     for (const event of activityEvents) {
-      document.removeEventListener(event, handleInteraction);
+      document.removeEventListener(event, handleActivity);
     }
     listenersAttached = false;
   };
@@ -192,7 +192,7 @@ export function createIdleDetector(
       if (isRunning) return;
       isRunning = true;
       addListeners();
-      resetTimer(false); // Start the first countdown
+      resetTimer(); // Start the first countdown
     },
     stop() {
       isRunning = false;
