@@ -29,8 +29,7 @@ describe('storage.ts', () => {
       expect(exists).not.toHaveBeenCalled();
       expect(readTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '[storage] Failed to read "../secret.json":',
-        expect.any(Error)
+        '[storage] Failed to read "../secret.json": (Error details omitted for security)'
       );
       expect(result).toBeNull();
     });
@@ -41,8 +40,7 @@ describe('storage.ts', () => {
       expect(exists).not.toHaveBeenCalled();
       expect(readTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '[storage] Failed to read "/etc/passwd":',
-        expect.any(Error)
+        '[storage] Failed to read "/etc/passwd": (Error details omitted for security)'
       );
       expect(result).toBeNull();
     });
@@ -53,8 +51,7 @@ describe('storage.ts', () => {
       expect(exists).not.toHaveBeenCalled();
       expect(readTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '[storage] Failed to read "C:\\Windows\\System32\\config\\SAM":',
-        expect.any(Error)
+        '[storage] Failed to read "C:\\Windows\\System32\\config\\SAM": (Error details omitted for security)'
       );
       expect(result).toBeNull();
     });
@@ -86,7 +83,7 @@ describe('storage.ts', () => {
 
       const result = await readData('test.json');
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to read "test.json":', mockError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to read "test.json": (Error details omitted for security)');
       expect(result).toBeNull();
     });
   });
@@ -98,8 +95,7 @@ describe('storage.ts', () => {
       expect(mkdir).not.toHaveBeenCalled();
       expect(writeTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '[storage] Failed to write "../test.json":',
-        expect.any(Error)
+        '[storage] Failed to write "../test.json": (Error details omitted for security)'
       );
     });
 
@@ -120,7 +116,7 @@ describe('storage.ts', () => {
 
       await writeData('test.json', { test: 'data' });
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to write "test.json":', mockError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to write "test.json": (Error details omitted for security)');
     });
   });
 });
