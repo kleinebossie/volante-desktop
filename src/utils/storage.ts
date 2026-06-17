@@ -49,7 +49,8 @@ export async function readData<T>(filename: string): Promise<T | null> {
     const raw = await readTextFile(filename, { baseDir: BaseDirectory.AppData });
     return JSON.parse(raw) as T;
   } catch (error) {
-    console.error(`[storage] Failed to read "${filename}":`, error);
+    // SECURITY: Do not log raw Tauri filesystem errors to avoid leaking absolute OS paths and usernames.
+    console.error(`[storage] Failed to read "${filename}"`);
     return null;
   }
 }
@@ -70,6 +71,7 @@ export async function writeData<T>(filename: string, data: T): Promise<void> {
     const json = JSON.stringify(data, null, 2);
     await writeTextFile(filename, json, { baseDir: BaseDirectory.AppData });
   } catch (error) {
-    console.error(`[storage] Failed to write "${filename}":`, error);
+    // SECURITY: Do not log raw Tauri filesystem errors to avoid leaking absolute OS paths and usernames.
+    console.error(`[storage] Failed to write "${filename}"`);
   }
 }

@@ -12,3 +12,7 @@
 **Vulnerability:** High-frequency DOM events (like `mousemove`) were triggering penalty detector countdown resets directly without throttling.
 **Learning:** Attaching complex logic or even simple timeout resets to unthrottled, high-frequency DOM events can lead to high CPU/battery drain and potentially client-side Denial of Service (DoS).
 **Prevention:** Throttle DOM event handlers, especially for continuous events like `mousemove` and `scroll`, to execute at most every 500ms or appropriate interval.
+## 2024-05-24 - [Tauri File System Error Information Leakage]
+**Vulnerability:** Raw `Error` objects returned from native Tauri plugin (`@tauri-apps/plugin-fs`) APIs like `exists`, `readTextFile`, and `mkdir` contain absolute OS file paths and usernames. Passing these raw error objects to client-side loggers (e.g., `console.error`) leaked this sensitive machine-level data.
+**Learning:** Native filesystem APIs wrapped by desktop application frameworks like Tauri often expose low-level system paths that would normally be obscured in a standard browser environment. Any failure points interacting with these native APIs need to sanitize their output before passing it to public logging mechanisms.
+**Prevention:** Explicitly block raw `error` objects from being logged or returned in catch blocks surrounding native filesystem calls. Instead, log generic error messages (e.g., `Failed to read "[filename]"`), and sanitize or drop the underlying error data.
