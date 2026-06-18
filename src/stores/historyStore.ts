@@ -16,6 +16,7 @@
 import { create } from 'zustand';
 import type { Session } from '../types/session';
 import { readData, writeData } from '../utils/storage';
+import { sanitizeHistory } from '../utils/validatePersisted';
 
 /** Filename used in the Tauri app-data directory. */
 const HISTORY_FILE = 'history.json';
@@ -67,10 +68,15 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
   // loadHistory
   // -------------------------------------------------------------------------
   async loadHistory() {
-    const saved = await readData<Session[]>(HISTORY_FILE);
+    const saved = await readData<unknown>(HISTORY_FILE);
 
-    if (Array.isArray(saved) && saved.length > 0) {
-      set({ sessions: saved, isLoaded: true });
+    // Validate before trusting on-disk data: drop any malformed entries and
+    // clamp numeric fields rather than rendering corrupt sessions (see
+    // sanitizeHistory). Also enforce the entry cap in case the file was
+    // hand-edited beyond it.
+    const sessions = sanitizeHistory(saved).slice(0, MAX_HISTORY_ENTRIES);
+    if (sessions.length > 0) {
+      set({ sessions, isLoaded: true });
     } else {
       set({ isLoaded: true });
     }

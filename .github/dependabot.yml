@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # Keep GitHub Actions pinned-by-SHA references up to date (release.yml).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Frontend npm dependencies.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Rust / Tauri dependencies (picks up advisory-driven bumps such as the
+  # glib >= 0.20 fix for RUSTSEC-2024-0429 once the Tauri stack ships it).
+  - package-ecosystem: "cargo"
+    directory: "/src-tauri"
+    schedule:
+      interval: "weekly"

@@ -4,6 +4,9 @@
    and base typographic styles. All component styles go in .module.css files.
    ========================================================================== */
 
+/* Self-hosted webfonts (no network egress — see public/fonts/fonts.css). */
+@import url('/fonts/fonts.css');
+
 /* --------------------------------------------------------------------------
    1. CSS Custom Properties (Design Tokens)
    -------------------------------------------------------------------------- */

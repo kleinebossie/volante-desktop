@@ -15,6 +15,7 @@
 import { create } from 'zustand';
 import { DEFAULT_SETTINGS, UserSettings } from '../types/settings';
 import { readData, writeData } from '../utils/storage';
+import { sanitizeSettings } from '../utils/validatePersisted';
 
 /** The filename we store settings under in the Tauri app-data directory. */
 const SETTINGS_FILE = 'settings.json';
@@ -61,12 +62,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   // loadSettings — read from disk; merge over defaults (handles partial files)
   // -------------------------------------------------------------------------
   async loadSettings() {
-    const saved = await readData<Partial<UserSettings>>(SETTINGS_FILE);
+    const saved = await readData<unknown>(SETTINGS_FILE);
 
-    if (saved) {
-      // Merge saved values over the defaults so any new settings fields added
-      // in future versions automatically get their default value.
-      set({ settings: { ...DEFAULT_SETTINGS, ...saved }, isLoaded: true });
+    if (saved != null) {
+      // Validate and sanitize before trusting on-disk data: corrupt or tampered
+      // files are clamped to safe ranges and unknown/ill-typed fields fall back
+      // to defaults (see sanitizeSettings). New fields added in future versions
+      // also automatically get their default value.
+      set({ settings: sanitizeSettings(saved), isLoaded: true });
     } else {
       // First launch or missing file — use defaults as-is.
       set({ isLoaded: true });

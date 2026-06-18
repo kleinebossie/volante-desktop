@@ -59,5 +59,5 @@ The codebase enforces a strict separation between **pure logic**, **state**, **R
 - TypeScript strict mode, no `any`. CSS Modules only (one `.module.css` per component); shared design tokens are CSS variables in `src/index.css`. PascalCase components (one per file, functional + hooks), camelCase functions/vars.
 - Tests are colocated next to source (`foo.ts` + `foo.test.ts`), using vitest + Testing Library.
 - Many source files reference an `ARCHITECTURE.md` (e.g. "From ARCHITECTURE.md §9.5") in their headers. That file is not currently in the repo — the section numbers are historical breadcrumbs, not a present source of truth.
-- Tauri identifier is `com.volante.app`; capabilities (`src-tauri/capabilities/default.json`) grant only `core:default`, `opener:default`, `fs:default`. Adding a Tauri plugin/API generally means adding a permission here.
+- Tauri identifier is `com.volante.app`; capabilities (`src-tauri/capabilities/default.json`) grant only `core:default` and `fs:default`. Adding a Tauri plugin/API generally means adding a permission here.
 - PRs target `main`; commit messages follow conventional prefixes (`feat:`, `fix:`, `perf:`).
