@@ -30,7 +30,7 @@ describe('storage.ts', () => {
       expect(readTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '[storage] Failed to read "../secret.json":',
-        expect.any(Error)
+        expect.stringContaining('Path traversal detected')
       );
       expect(result).toBeNull();
     });
@@ -42,7 +42,7 @@ describe('storage.ts', () => {
       expect(readTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '[storage] Failed to read "/etc/passwd":',
-        expect.any(Error)
+        expect.stringContaining('Path traversal detected')
       );
       expect(result).toBeNull();
     });
@@ -54,7 +54,7 @@ describe('storage.ts', () => {
       expect(readTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '[storage] Failed to read "C:\\Windows\\System32\\config\\SAM":',
-        expect.any(Error)
+        expect.stringContaining('Path traversal detected')
       );
       expect(result).toBeNull();
     });
@@ -86,7 +86,7 @@ describe('storage.ts', () => {
 
       const result = await readData('test.json');
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to read "test.json":', mockError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to read "test.json":', 'Filesystem operation failed');
       expect(result).toBeNull();
     });
   });
@@ -99,7 +99,7 @@ describe('storage.ts', () => {
       expect(writeTextFile).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '[storage] Failed to write "../test.json":',
-        expect.any(Error)
+        expect.stringContaining('Path traversal detected')
       );
     });
 
@@ -120,7 +120,7 @@ describe('storage.ts', () => {
 
       await writeData('test.json', { test: 'data' });
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to write "test.json":', mockError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[storage] Failed to write "test.json":', 'Filesystem operation failed');
     });
   });
 });

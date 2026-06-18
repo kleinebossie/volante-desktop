@@ -12,3 +12,8 @@
 **Vulnerability:** High-frequency DOM events (like `mousemove`) were triggering penalty detector countdown resets directly without throttling.
 **Learning:** Attaching complex logic or even simple timeout resets to unthrottled, high-frequency DOM events can lead to high CPU/battery drain and potentially client-side Denial of Service (DoS).
 **Prevention:** Throttle DOM event handlers, especially for continuous events like `mousemove` and `scroll`, to execute at most every 500ms or appropriate interval.
+
+## 2025-03-08 - [Information Leak] Prevent OS Path Leakage in Storage Logs
+**Vulnerability:** The application was passing raw `Error` objects from Tauri's `@tauri-apps/plugin-fs` directly to `console.error` inside `src/utils/storage.ts`. In desktop applications, native filesystem error objects typically contain absolute local paths (e.g., `/Users/johndoe/.local/share/com.volante.app/settings.json`), inadvertently exposing the user's OS username and filesystem structure to the console or potential log collectors.
+**Learning:** Native API errors often contain sensitive environmental data that is not safe to dump to the console, especially if error reporting tools or log files are present.
+**Prevention:** Always extract and log only generic messages or safe, known application-level validation errors from native exceptions. Fail securely without leaking system internals to prevent PII exposure.
