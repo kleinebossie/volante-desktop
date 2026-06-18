@@ -39,6 +39,11 @@ describe('penaltyDetector helpers', () => {
     expect(isPenaltyEnabled('idle', [...enabled])).toBe(true);
     expect(isPenaltyEnabled('unfocus', [...enabled])).toBe(false);
   });
+
+  it('returns 0 for an unrecognized trigger', () => {
+    // Defensive default branch — should never happen with valid types.
+    expect(getPenaltyAmount('teleport' as never, PENALTY_CONFIG)).toBe(0);
+  });
 });
 
 describe('createIdleDetector', () => {
@@ -75,6 +80,31 @@ describe('createIdleDetector', () => {
     expect(onPenalty).toHaveBeenCalledTimes(0);
 
     vi.advanceTimersByTime(400);
+    expect(onPenalty).toHaveBeenCalledTimes(1);
+
+    detector.destroy();
+  });
+
+  it('throttles high-frequency activity so the countdown resets at most every 500ms', () => {
+    vi.useFakeTimers();
+    // Pin Date.now so the throttle window is deterministic (handleActivity
+    // compares Date.now() against the last activity timestamp).
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+
+    const onPenalty = vi.fn();
+    const detector = createIdleDetector(1000, onPenalty);
+
+    detector.start();
+
+    // Two rapid mousemoves within the same 500ms throttle window: only the
+    // first resets the countdown, the second is ignored.
+    vi.advanceTimersByTime(100);
+    document.dispatchEvent(new MouseEvent('mousemove')); // resets at t=100
+    vi.advanceTimersByTime(200);
+    document.dispatchEvent(new MouseEvent('mousemove')); // ignored (within 500ms)
+
+    // From the t=100 reset, the 1000ms countdown fires at t=1100.
+    vi.advanceTimersByTime(800); // now t=1100
     expect(onPenalty).toHaveBeenCalledTimes(1);
 
     detector.destroy();

@@ -47,7 +47,7 @@ function emptyRegulationRecord<V>(value: V): Record<RegulationType, V> {
 // Store shape
 // ---------------------------------------------------------------------------
 
-interface CreateSessionParams {
+export interface CreateSessionParams {
   trackId: string;
   seasonYear: number;
   durationSec: number;

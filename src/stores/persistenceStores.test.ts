@@ -61,6 +61,16 @@ describe('settingsStore persistence', () => {
     expect(state.settings.defaultSeasonYear).toBe(DEFAULT_SETTINGS.defaultSeasonYear);
   });
 
+  it('keeps defaults and marks loaded when no settings file exists', async () => {
+    readDataMock.mockResolvedValue(null);
+
+    await useSettingsStore.getState().loadSettings();
+    const state = useSettingsStore.getState();
+
+    expect(state.isLoaded).toBe(true);
+    expect(state.settings).toEqual(DEFAULT_SETTINGS);
+  });
+
   it('writes settings on update', async () => {
     await useSettingsStore.getState().updateSettings({ defaultSeasonYear: 2025 });
 
@@ -69,6 +79,28 @@ describe('settingsStore persistence', () => {
       'settings.json',
       expect.objectContaining({ defaultSeasonYear: 2025 })
     );
+  });
+
+  it('merges partial updates over existing settings', async () => {
+    await useSettingsStore.getState().updateSettings({ defaultDurationMin: 45 });
+    await useSettingsStore.getState().updateSettings({ soundEnabled: false });
+
+    const state = useSettingsStore.getState();
+    expect(state.settings.defaultDurationMin).toBe(45);
+    expect(state.settings.soundEnabled).toBe(false);
+    // Unrelated fields keep their default values.
+    expect(state.settings.defaultSeasonYear).toBe(DEFAULT_SETTINGS.defaultSeasonYear);
+  });
+
+  it('resets settings back to defaults and persists them', async () => {
+    await useSettingsStore.getState().updateSettings({ defaultDurationMin: 99 });
+    writeDataMock.mockClear();
+
+    await useSettingsStore.getState().resetSettings();
+
+    const state = useSettingsStore.getState();
+    expect(state.settings).toEqual(DEFAULT_SETTINGS);
+    expect(writeDataMock).toHaveBeenCalledWith('settings.json', DEFAULT_SETTINGS);
   });
 });
 
@@ -91,6 +123,65 @@ describe('historyStore persistence', () => {
     expect(state.sessions[0].id).toBe('s1');
   });
 
+  it('starts empty and marks loaded when no history file exists', async () => {
+    readDataMock.mockResolvedValue(null);
+
+    await useHistoryStore.getState().loadHistory();
+    const state = useHistoryStore.getState();
+
+    expect(state.isLoaded).toBe(true);
+    expect(state.sessions).toEqual([]);
+  });
+
+  it('treats an empty saved array as no history', async () => {
+    readDataMock.mockResolvedValue([]);
+
+    await useHistoryStore.getState().loadHistory();
+    const state = useHistoryStore.getState();
+
+    expect(state.isLoaded).toBe(true);
+    expect(state.sessions).toEqual([]);
+  });
+
+  it('prepends a new session and persists the list', async () => {
+    const existing = makeSession('old', 'completed');
+    useHistoryStore.setState({ sessions: [existing], isLoaded: true });
+
+    const fresh = makeSession('new', 'completed');
+    await useHistoryStore.getState().addSession(fresh);
+
+    const state = useHistoryStore.getState();
+    expect(state.sessions.map((s) => s.id)).toEqual(['new', 'old']);
+    expect(writeDataMock).toHaveBeenCalledWith('history.json', state.sessions);
+  });
+
+  it('moves an existing session to the front when re-added', async () => {
+    const a = makeSession('a', 'completed');
+    const b = makeSession('b', 'completed');
+    const c = makeSession('c', 'completed');
+    useHistoryStore.setState({ sessions: [a, b, c], isLoaded: true });
+
+    await useHistoryStore.getState().addSession(makeSession('c', 'abandoned'));
+
+    const state = useHistoryStore.getState();
+    expect(state.sessions.map((s) => s.id)).toEqual(['c', 'a', 'b']);
+    expect(state.sessions).toHaveLength(3);
+    expect(state.sessions[0].state).toBe('abandoned');
+  });
+
+  it('caps history at 100 entries, pruning the oldest', async () => {
+    const existing = Array.from({ length: 100 }, (_, i) => makeSession(`s${i}`, 'completed'));
+    useHistoryStore.setState({ sessions: existing, isLoaded: true });
+
+    await useHistoryStore.getState().addSession(makeSession('newest', 'completed'));
+
+    const state = useHistoryStore.getState();
+    expect(state.sessions).toHaveLength(100);
+    expect(state.sessions[0].id).toBe('newest');
+    // The previously-oldest entry (s99) has been pruned.
+    expect(state.sessions.some((s) => s.id === 's99')).toBe(false);
+  });
+
   it('deduplicates by session id when adding', async () => {
     const existing = makeSession('session-1', 'completed');
     useHistoryStore.setState({ sessions: [existing], isLoaded: true });
@@ -102,5 +193,17 @@ describe('historyStore persistence', () => {
     expect(state.sessions).toHaveLength(1);
     expect(state.sessions[0].state).toBe('abandoned');
     expect(writeDataMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears history in memory and on disk', async () => {
+    useHistoryStore.setState({
+      sessions: [makeSession('x', 'completed')],
+      isLoaded: true,
+    });
+
+    await useHistoryStore.getState().clearHistory();
+
+    expect(useHistoryStore.getState().sessions).toEqual([]);
+    expect(writeDataMock).toHaveBeenCalledWith('history.json', []);
   });
 });

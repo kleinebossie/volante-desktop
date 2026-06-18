@@ -22,6 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+content-prep
 
 CONTEXT.md
 ARCHITECTURE.md
@@ -30,3 +31,4 @@ RELEASE.md
 .antigravitycli/
 .agents/
 ROADMAP.md
+CLAUDE.md

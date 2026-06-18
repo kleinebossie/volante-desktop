@@ -7,7 +7,11 @@ import {
   canActivateRegulation,
   getRegulationState,
   getCooldownRemainingSec,
+  getCooldownProgress,
+  getActiveRegulationRemainingSec,
+  getActiveRegulationProgress,
   getRemainingUses,
+  getRegulationConfig,
   calculateInterruptionPenalty,
 } from './regulationsEngine';
 import type { Session } from '../types/session';
@@ -180,6 +184,107 @@ describe('regulationsEngine season interactions', () => {
     const longOvertake = longSessionSeason!.regulations.find((r) => r.type === 'overtake');
     expect(longBoost!.durationSec).toBe(180); // 5% of 3600
     expect(longOvertake!.durationSec).toBe(360); // 10% of 3600
+  });
+
+  it('reports unavailable state for a regulation not in the season', () => {
+    const session = makeSession({ seasonYear: 2026 });
+    expect(getRegulationState('drs', session, season2026)).toBe('unavailable');
+    expect(getRegulationState('boost', session, season2025)).toBe('unavailable');
+  });
+
+  it('reports available state when cooldown has elapsed', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+
+    const now = Date.now();
+    const session = makeSession({
+      cooldowns: { boost: now - 1_000, overtake: 0, drs: 0 },
+    });
+
+    expect(getRegulationState('boost', session, season2026)).toBe('available');
+    expect(getCooldownRemainingSec('boost', session)).toBe(0);
+  });
+
+  it('reports cooldown state and progress while on cooldown', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+
+    const now = Date.now();
+    const boostConfig = season2026.regulations.find((r) => r.type === 'boost')!;
+    const session = makeSession({
+      cooldowns: { boost: now + boostConfig.cooldownSec * 1000, overtake: 0, drs: 0 },
+    });
+
+    expect(getRegulationState('boost', session, season2026)).toBe('cooldown');
+    // Full bar at the very start of the cooldown.
+    expect(getCooldownProgress('boost', session, boostConfig)).toBeCloseTo(1, 5);
+
+    // Halfway through the cooldown the bar should be ~0.5.
+    vi.setSystemTime(new Date(now + (boostConfig.cooldownSec / 2) * 1000));
+    expect(getCooldownProgress('boost', session, boostConfig)).toBeCloseTo(0.5, 1);
+  });
+
+  it('returns 0 cooldown progress when not on cooldown or cooldown duration is zero', () => {
+    const session = makeSession();
+    const boostConfig = season2026.regulations.find((r) => r.type === 'boost')!;
+
+    expect(getCooldownProgress('boost', session, boostConfig)).toBe(0);
+    expect(getCooldownProgress('boost', session, { ...boostConfig, cooldownSec: 0 })).toBe(0);
+  });
+
+  it('computes active regulation remaining time and progress', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+
+    const now = Date.now();
+    const boostConfig = season2026.regulations.find((r) => r.type === 'boost')!;
+    const session = makeSession({
+      activeRegulation: 'boost',
+      regulationEndTime: now + boostConfig.durationSec * 1000,
+    });
+
+    expect(getActiveRegulationRemainingSec(session)).toBeCloseTo(boostConfig.durationSec, 1);
+    expect(getActiveRegulationProgress(session, boostConfig)).toBeCloseTo(1, 5);
+
+    // Advance to just before expiry.
+    vi.setSystemTime(new Date(now + boostConfig.durationSec * 1000 - 1000));
+    expect(getActiveRegulationRemainingSec(session)).toBeCloseTo(1, 1);
+    expect(getActiveRegulationProgress(session, boostConfig)).toBeCloseTo(1 / boostConfig.durationSec, 2);
+  });
+
+  it('returns 0 active remaining/progress when no regulation is active', () => {
+    const idle = makeSession();
+    const boostConfig = season2026.regulations.find((r) => r.type === 'boost')!;
+
+    expect(getActiveRegulationRemainingSec(idle)).toBe(0);
+    expect(getActiveRegulationProgress(idle, boostConfig)).toBe(0);
+
+    // Active flag set but no end time → treated as inactive.
+    const noEnd = makeSession({ activeRegulation: 'boost', regulationEndTime: null });
+    expect(getActiveRegulationRemainingSec(noEnd)).toBe(0);
+
+    // Expired regulation → remaining clamps to 0.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+    const expired = makeSession({
+      activeRegulation: 'boost',
+      regulationEndTime: Date.now() - 5_000,
+    });
+    expect(getActiveRegulationRemainingSec(expired)).toBe(0);
+    expect(getActiveRegulationProgress(expired, boostConfig)).toBe(0);
+  });
+
+  it('returns null remaining uses for unlimited regulations', () => {
+    const session = makeSession();
+    const unlimitedConfig = { ...season2026.regulations[0], maxUsesPerSession: null };
+    expect(getRemainingUses('boost', session, unlimitedConfig)).toBeNull();
+  });
+
+  it('looks up regulation config by type within a ruleset', () => {
+    expect(getRegulationConfig('boost', season2026)?.label).toBe('BOOST');
+    expect(getRegulationConfig('overtake', season2026)?.label).toBe('OVERTAKE');
+    expect(getRegulationConfig('drs', season2026)).toBeUndefined();
+    expect(getRegulationConfig('drs', season2025)?.label).toBe('DRS');
   });
 
   it('applies safety clamp if boost/drs duration exceeds overtake duration', () => {
