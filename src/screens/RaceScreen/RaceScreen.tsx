@@ -322,7 +322,7 @@ export function RaceScreen() {
         </button>
       </section>
 
-      <div className={styles.footerRow}>
+      <div className={styles.bottomLeftStack}>
         <div className={styles.strategy}>
           <span className={styles.strategyLabel}>Strategy:</span>
           {strategyNotes.length > 0 ? (
@@ -423,6 +423,13 @@ export function RaceScreen() {
             <span className={styles.strategyLockHint}>Locked by Parc Ferme.</span>
           )}
         </div>
+
+        {settings.showPenaltyFeed ? (
+          <PenaltyIndicator events={session.events} maxItems={8} />
+        ) : null}
+      </div>
+
+      <div className={styles.footerRow}>
         <button
           type="button"
           className={styles.abandonButton}
@@ -431,10 +438,6 @@ export function RaceScreen() {
           Abandon
         </button>
       </div>
-
-      {settings.showPenaltyFeed ? (
-        <PenaltyIndicator events={session.events} maxItems={3} />
-      ) : null}
 
       <AnimatePresence>
         {showAbandonConfirm ? (
