@@ -326,7 +326,15 @@ export function TrackRenderer({
             className={styles.progressTrail}
             style={{
               stroke: accentColor,
-              strokeDasharray: `${lapProgress * pathLength} ${pathLength}`,
+              // The visible dash grows with lap progress; the gap is the
+              // REMAINDER of the path so the pattern's period equals exactly
+              // one full lap length. That makes the single dash wrap
+              // seamlessly past the SVG path's geometric origin. With a gap of
+              // a whole `pathLength` instead, the dash would run off the end
+              // of the (open) path and get clipped — which is why the trail
+              // appeared to "stop" once the car passed the origin on tracks
+              // with a non-zero start offset (or reversed tracks).
+              strokeDasharray: `${lapProgress * pathLength} ${(1 - lapProgress) * pathLength}`,
               strokeDashoffset: -(reversed ? adjustedProgress : startOffset) * pathLength,
             }}
           />

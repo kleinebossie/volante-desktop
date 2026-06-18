@@ -109,9 +109,35 @@ export function getPointAtProgress(
   // Clamp progress to [0, 1] just in case
   const clampedProgress = Math.max(0, Math.min(1, progress));
 
-  // Find the nearest precomputed point
-  const index = Math.round(clampedProgress * CACHE_RESOLUTION);
-  return cache[index];
+  // Map progress onto a *fractional* cache index and linearly interpolate
+  // between the two neighbouring precomputed points.
+  //
+  // Why not just snap to the nearest point (Math.round)? A lap takes
+  // `lapTimeSec` real seconds to traverse, so there are only
+  // CACHE_RESOLUTION (1000) distinct snap positions spread across the whole
+  // lap. At 60fps that means the car only visibly moves ~10–15 times per
+  // second — a choppy, low-framerate stutter. Interpolating means the car's
+  // (x, y) advance smoothly on every animation frame instead.
+  const exactIndex = clampedProgress * CACHE_RESOLUTION;
+  const lowerIndex = Math.floor(exactIndex);
+  const upperIndex = Math.min(lowerIndex + 1, CACHE_RESOLUTION);
+  const t = exactIndex - lowerIndex;
+
+  const a = cache[lowerIndex];
+  if (t === 0 || lowerIndex === upperIndex) return a;
+  const b = cache[upperIndex];
+
+  // Interpolate the angle along the SHORTEST arc, otherwise the car would
+  // spin the "long way round" whenever the heading crosses the ±180° seam.
+  let angleDelta = b.angle - a.angle;
+  if (angleDelta > 180) angleDelta -= 360;
+  else if (angleDelta < -180) angleDelta += 360;
+
+  return {
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t,
+    angle: a.angle + angleDelta * t,
+  };
 }
 
 // ---------------------------------------------------------------------------
