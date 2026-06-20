@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { SessionEvent } from '../../types/session';
 import styles from './PenaltyIndicator.module.css';
 
@@ -28,7 +29,19 @@ function formatPenaltyEvent(event: SessionEvent): { id: string; text: string } |
   return null;
 }
 
-export function PenaltyIndicator({ events, maxItems = 3 }: PenaltyIndicatorProps) {
+/**
+ * ⚡ Bolt Optimization: Added React.memo()
+ *
+ * Impact: Prevents this component from re-rendering ~60 times per second
+ * when the parent RaceScreen ticks the session clock.
+ *
+ * Why: The parent RaceScreen subscribes to the entire session state,
+ * which updates on every animation frame. Since `events` and `maxItems`
+ * are referentially stable between frames, memoizing this display
+ * component avoids running the formatting loop and diffing the list
+ * on every tick, saving CPU overhead on the main thread.
+ */
+export const PenaltyIndicator = memo(function PenaltyIndicator({ events, maxItems = 3 }: PenaltyIndicatorProps) {
   const items: { id: string; text: string }[] = [];
 
   // Iterate backwards to get the most recent penalty events without mapping the whole array.
@@ -55,4 +68,4 @@ export function PenaltyIndicator({ events, maxItems = 3 }: PenaltyIndicatorProps
       </ul>
     </div>
   );
-}
+});
